@@ -67,7 +67,16 @@ nextflow run main.nf  \
     --kraken_db '/home/projects/LAB/reference/dbkraken/k2_standard_20240112'
 #    #-resume
 
-
+# Real data iSeq .tar.gz
+nextflow run main.nf  \
+    -profile singularity \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_tar.gz.csv' \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_iSeq_tar' \
+    --demultiplexer 'dragen' \
+    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
+    --sample_size 10000 \
+    --kraken_db '/home/projects/LAB/reference/dbkraken/k2_standard_20240112'
+#    #-resume
 
         input           =   '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_split.csv'
         outdir          =   '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results'
