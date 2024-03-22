@@ -53,7 +53,7 @@ nextflow run main.nf  \
     --demultiplexer 'dragen' \
     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
     --sample_size 10000 \
-    --kraken_db '/home/projects/LAB/reference/dbkraken/k2_standard_20240112'
+    --kraken_db '/data/scratch/LAB/reference/dbkraken2/k2_standard_20240112'
 #    #-resume
 
 # Real data NovaSeq
@@ -64,25 +64,18 @@ nextflow run main.nf  \
     --demultiplexer 'dragen' \
     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
     --sample_size 10000 \
-    --kraken_db '/home/projects/LAB/reference/dbkraken/k2_standard_20240112'
+    --kraken_db '/data/scratch/LAB/reference/dbkraken2/k2_standard_20240112'
 #    #-resume
 
 # Real data iSeq .tar.gz
-nextflow run main.nf  \
-    -profile singularity \
-    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_tar.gz.csv' \
-    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_iSeq_tar' \
-    --demultiplexer 'dragen' \
-    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
-    --sample_size 10000 \
-    --kraken_db '/home/projects/LAB/reference/dbkraken/k2_standard_20240112'
+# nextflow run main.nf  \
+#    -profile singularity \
+#    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_tar.gz.csv' \
+#    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_iSeq_tar' \
+#    --demultiplexer 'dragen' \
+#     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
+#     --sample_size 10000 \
+#     --kraken_db '/data/scratch/LAB/reference/dbkraken2/k2_standard_20240112'
 #    #-resume
 
-        input           =   '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_split.csv'
-        outdir          =   '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results'
-        demultiplexer   =   'dragen'
-        demultiplexer = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux
-        trim_fastq    = params.trim_fastq                                      // boolean: true, false
-        skip_tools    = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc]
-        sample_size   = params.sample_size                                     // int
-        kraken_db     = params.kraken_db                                       // path
+
