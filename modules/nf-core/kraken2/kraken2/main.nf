@@ -18,7 +18,6 @@ process KRAKEN2_KRAKEN2 {
     tuple val(meta), path('*.unclassified{.,_}*')   , optional:true, emit: unclassified_reads_fastq
     tuple val(meta), path('*classifiedreads.txt')   , optional:true, emit: classified_reads_assignment
     tuple val(meta), path('*report.txt')                           , emit: report
-    //tuple val(meta), path('*.krona.html')                          , emit: krona
     path "versions.yml"                                            , emit: versions
 
     when:
@@ -51,9 +50,6 @@ process KRAKEN2_KRAKEN2 {
     $compress_reads_command
 
  
-    """
-    stub:
-    """
     touch ${prefix}.kraken2.report.txt
     if [ "$save_output_fastqs" == "true" ]; then
         touch $classified
