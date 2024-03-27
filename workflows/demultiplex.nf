@@ -53,6 +53,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS   } from '../modules/nf-core/custom/dumpso
 include { FASTP                         } from '../modules/nf-core/fastp/main'
 include { FALCO                         } from '../modules/nf-core/falco/main'
 include { KRAKEN2_KRAKEN2               } from '../modules/nf-core/kraken2/kraken2/main'
+include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
@@ -226,6 +227,8 @@ workflow DEMULTIPLEX {
     }
 
 
+
+
     // MODULE: md5sum
     // Split file list into separate channels entries and generate a checksum for each
     MD5SUM(ch_fastq_to_qc.transpose())
@@ -240,6 +243,12 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
+
+    // if (!("fastq_screen" in skip_tools)){
+    //     FASTQ_SCREEN(
+
+    //     )
+    // }
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (

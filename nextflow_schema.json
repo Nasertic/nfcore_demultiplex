@@ -19,7 +19,7 @@
                 "skip_tools": {
                     "type": "string",
                     "default": null,
-                    "description": "Comma-separated list of tools to skip (fastp,falco,multiqc)"
+                    "description": "Comma-separated list of tools to skip (fastp,falco,multiqc,kraken2)"
                 },
                 "sample_size": {
                     "type": "integer",

@@ -10,9 +10,9 @@
 ml purge
 module use --append /opt/shared/modules/all/
 module use --append /software/shared/modules/all
-# conda activate nf_core
+conda activate nf_core_2023
 module load singularity/3.4.1
-#conda activate nf_core_2023
+
 # Test 1 run from nf_core/demultiplex
 
 #nextflow run nf-core/demultiplex \
@@ -46,14 +46,14 @@ nextflow run main.nf -profile test_dragen,singularity -c hpc.conf
 
 
 # Real data iSeq
-nextflow run main.nf  \
-    -profile singularity \
-    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet.csv' \
-    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_NovaSeq' \
-    --demultiplexer 'dragen' \
-    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
-    --sample_size 10000 \
-    --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
+# nextflow run main.nf  \
+#    -profile singularity \
+#    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet.csv' \
+#    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_NovaSeq' \
+#    --demultiplexer 'dragen' \
+#    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
+#    --sample_size 10000 \
+#    --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
 #    #-resume
 
 # Real data NovaSeq
