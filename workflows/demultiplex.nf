@@ -69,11 +69,13 @@ def multiqc_report = []
 
 workflow DEMULTIPLEX {
     // Value inputs
-    demultiplexer = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
-    trim_fastq    = params.trim_fastq                                      // boolean: true, false
-    skip_tools    = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc]
-    sample_size   = params.sample_size                                     // int
-    kraken_db     = params.kraken_db                                       // path
+    demultiplexer           = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
+    trim_fastq               = params.trim_fastq                                      // boolean: true, false
+    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc,kraken2]
+    sample_size             = params.sample_size                                     // int
+    kraken_db               = params.kraken_db                                       // path
+    fastq_screen_config     = params.fastq_screen_config                             // path
+    fastq_screen_subset     = params.fastq_screen_subset                             // int
 
     // Channel inputs
     ch_input = file(params.input)
@@ -234,7 +236,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db){
+    if (!("kraken2" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],
@@ -244,11 +246,15 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
 
-    // if (!("fastq_screen" in skip_tools)){
-    //     FASTQ_SCREEN(
-
-    //     )
-    // }
+    if (!("fastq_screen" in skip_tools)){
+        FASTQ_SCREEN(
+            ch_fastq_to_qc,
+            fastq_screen_config,
+            fastq_screen_subset
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( FASTQ_SCREEN.out.fastq_screen_txt_report.map { meta, txt -> return txt} )
+        ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
+    }
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (
