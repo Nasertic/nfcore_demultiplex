@@ -37,6 +37,7 @@ process KRAKEN2_KRAKEN2 {
     """
     kraken2 \\
         --db $db \\
+        --memory-mapping \\
         --threads $task.cpus \\
         --report ${prefix}.kraken2.report.txt \\
         --gzip-compressed \\
