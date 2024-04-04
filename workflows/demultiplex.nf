@@ -20,8 +20,8 @@ log.info logo + paramsSummaryLog(workflow) + citation
 */
 
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.fromPath("$projectDir/assets/custom_multiqc_config.yaml", checkIfExists: true)
+ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.fromPath("$projectDir/assets/LogoNasertic.png", checkIfExists: true)
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
 /*
@@ -71,7 +71,7 @@ workflow DEMULTIPLEX {
     // Value inputs
     demultiplexer           = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
     trim_fastq               = params.trim_fastq                                      // boolean: true, false
-    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc,kraken2]
+    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc,kraken, fastq_screen]
     sample_size             = params.sample_size                                     // int
     kraken_db               = params.kraken_db                                       // path
     fastq_screen_config     = params.fastq_screen_config                             // path
@@ -236,15 +236,15 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (!("kraken2" in skip_tools)){
+    if (kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
-            [sample_size],
-            kraken_db
+            [sample_size],  kraken_db
         )
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
+
 
     if (!("fastq_screen" in skip_tools)){
         FASTQ_SCREEN(
