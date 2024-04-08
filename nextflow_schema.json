@@ -19,7 +19,7 @@
                 "skip_tools": {
                     "type": "string",
                     "default": null,
-                    "description": "Comma-separated list of tools to skip (fastp,falco,multiqc)"
+                    "description": "Comma-separated list of tools to skip (fastp,falco,multiqc,kraken, fastq_screen)"
                 },
                 "sample_size": {
                     "type": "integer",
@@ -42,11 +42,6 @@
                     "format": "file-path",
                     "default": "/data/scratch/LAB/references/FastQ_Screen_Genomes/fastq_screen.conf",
                     "description": "Path to FastQ Screen configuration file."
-                },
-                "no_split": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "TO BE REMOVED --> JUST FOR TESTING TOOL"
                 }
             }
         },
@@ -88,6 +83,21 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "multiqc_comment": {
+                    "type": "string",
+                    "description": "MultiQC report comment.",
+                    "fa_icon": "fas fa-file-signature"
+                },
+                "split": {
+                    "type": "boolean",
+                    "description": "option to select the analysis of the lanes separately, only for the Dragen test.",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "NovaSeq": {
+                    "type": "boolean",
+                    "description": "option to select the NovaSeq instrument, only for the Dragon test.",
+                    "fa_icon": "fas fa-question-circle"
                 }
             }
         },

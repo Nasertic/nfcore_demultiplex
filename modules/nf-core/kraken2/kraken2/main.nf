@@ -37,6 +37,7 @@ process KRAKEN2_KRAKEN2 {
     """
     kraken2 \\
         --db $db \\
+        --memory-mapping \\
         --threads $task.cpus \\
         --report ${prefix}.kraken2.report.txt \\
         --gzip-compressed \\
@@ -49,6 +50,7 @@ process KRAKEN2_KRAKEN2 {
 
     $compress_reads_command
 
+ 
     touch ${prefix}.kraken2.report.txt
     if [ "$save_output_fastqs" == "true" ]; then
         touch $classified
