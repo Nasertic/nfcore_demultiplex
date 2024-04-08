@@ -69,13 +69,13 @@ def multiqc_report = []
 
 workflow DEMULTIPLEX {
     // Value inputs
-    demultiplexer           = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
-    trim_fastq               = params.trim_fastq                                      // boolean: true, false
-    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc,kraken, fastq_screen]
-    sample_size             = params.sample_size                                     // int
-    kraken_db               = params.kraken_db                                       // path
-    fastq_screen_config     = params.fastq_screen_config                             // path
-    fastq_screen_subset     = params.fastq_screen_subset                             // int
+    demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
+    trim_fastq              = params.trim_fastq                                         // boolean: true, false
+    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
+    sample_size             = params.sample_size                                        // int
+    kraken_db               = params.kraken_db                                          // path
+    fastq_screen_config     = params.fastq_screen_config                                // path
+    fastq_screen_subset     = params.fastq_screen_subset                                // int
 
     // Channel inputs
     ch_input = file(params.input)
@@ -155,6 +155,7 @@ workflow DEMULTIPLEX {
         case ['bcl2fastq', 'bclconvert']:
             // SUBWORKFLOW: illumina
             // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
+            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
             BCL_DEMULTIPLEX( ch_flowcells, demultiplexer )
             ch_raw_fastq = ch_raw_fastq.mix( BCL_DEMULTIPLEX.out.fastq )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
@@ -228,9 +229,6 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FALCO.out.versions)
     }
 
-
-
-
     // MODULE: md5sum
     // Split file list into separate channels entries and generate a checksum for each
     MD5SUM(ch_fastq_to_qc.transpose())
@@ -244,7 +242,6 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
-
 
     if (!("fastq_screen" in skip_tools)){
         FASTQ_SCREEN(
