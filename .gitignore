@@ -8,7 +8,10 @@ testing*
 *.pyc
 .nf-test/
 null/
-sample_sheet*
 smallest_run_SampleSheet.csv
 just_testing*
-dragen_demultiplex*
+NovaSeq_run_SampleSheet.csv
+dragen_demultiplex*.out
+tests/
+*.tar.gz
+info.txt

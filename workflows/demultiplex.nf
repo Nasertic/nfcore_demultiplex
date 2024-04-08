@@ -33,10 +33,12 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { BCL_DEMULTIPLEX      } from '../subworkflows/nf-core/bcl_demultiplex/main'
-include { BASES_DEMULTIPLEX    } from '../subworkflows/local/bases_demultiplex/main'
-include { FQTK_DEMULTIPLEX     } from '../subworkflows/local/fqtk_demultiplex/main'
-include { SINGULAR_DEMULTIPLEX } from '../subworkflows/local/singular_demultiplex/main'
+include { BCL_DEMULTIPLEX           } from '../subworkflows/nf-core/bcl_demultiplex/main'
+include { DRAGEN_DEMULTIPLEX        } from '../subworkflows/local/dragen_demultiplex/main'
+include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/nf-core/fastq_contam_seqtk_kraken/main'
+include { BASES_DEMULTIPLEX         } from '../subworkflows/local/bases_demultiplex/main'
+include { FQTK_DEMULTIPLEX          } from '../subworkflows/local/fqtk_demultiplex/main'
+include { SINGULAR_DEMULTIPLEX      } from '../subworkflows/local/singular_demultiplex/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,6 +52,7 @@ include { SINGULAR_DEMULTIPLEX } from '../subworkflows/local/singular_demultiple
 include { CUSTOM_DUMPSOFTWAREVERSIONS   } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { FASTP                         } from '../modules/nf-core/fastp/main'
 include { FALCO                         } from '../modules/nf-core/falco/main'
+include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
@@ -65,9 +68,13 @@ def multiqc_report = []
 
 workflow DEMULTIPLEX {
     // Value inputs
-    demultiplexer = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux
-    trim_fastq    = params.trim_fastq                                      // boolean: true, false
-    skip_tools    = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc]
+    demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
+    trim_fastq              = params.trim_fastq                                         // boolean: true, false
+    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
+    sample_size             = params.sample_size                                        // int
+    kraken_db               = params.kraken_db                                          // path
+    fastq_screen_config     = params.fastq_screen_config                                // path
+    fastq_screen_subset     = params.fastq_screen_subset                                // int
 
     // Channel inputs
     ch_input = file(params.input)
@@ -144,15 +151,25 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix(BASES_DEMULTIPLEX.out.metrics.map { meta, metrics -> return metrics} )
             ch_versions = ch_versions.mix(BASES_DEMULTIPLEX.out.versions)
             break
-        case ['bcl2fastq', 'bclconvert', 'dragen']:
+        case ['bcl2fastq', 'bclconvert']:
             // SUBWORKFLOW: illumina
-            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq" or "dragen"
+            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
+            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
             BCL_DEMULTIPLEX( ch_flowcells, demultiplexer )
             ch_raw_fastq = ch_raw_fastq.mix( BCL_DEMULTIPLEX.out.fastq )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(BCL_DEMULTIPLEX.out.versions)
             break
+
+        case 'dragen':
+            DRAGEN_DEMULTIPLEX( ch_flowcells, demultiplexer )
+            ch_raw_fastq = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
+            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
+            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
+            ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            break
+
         case 'fqtk':
             // MODULE: fqtk
             // Runs when "demultiplexer" is set to "fqtk"
@@ -214,6 +231,27 @@ workflow DEMULTIPLEX {
     // MODULE: md5sum
     // Split file list into separate channels entries and generate a checksum for each
     MD5SUM(ch_fastq_to_qc.transpose())
+
+    // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
+    if (kraken_db){
+        FASTQ_CONTAM_SEQTK_KRAKEN(
+            ch_fastq_to_qc,
+            [sample_size],
+            kraken_db
+        )
+        ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
+    }
+
+    if (!("fastq_screen" in skip_tools)){
+        FASTQ_SCREEN(
+            ch_fastq_to_qc,
+            fastq_screen_config,
+            fastq_screen_subset
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( FASTQ_SCREEN.out.fastq_screen_txt_report.map { meta, txt -> return txt} )
+        ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
+    }
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (
