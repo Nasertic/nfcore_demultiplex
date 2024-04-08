@@ -171,15 +171,6 @@ workflow DEMULTIPLEX {
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
             break
 
-
-        case 'dragen':
-            DRAGEN_DEMULTIPLEX( ch_flowcells, demultiplexer )
-            ch_raw_fastq = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
-            ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            break
-
         case 'fqtk':
             // MODULE: fqtk
             // Runs when "demultiplexer" is set to "fqtk"
