@@ -17,7 +17,8 @@
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": [
                             "bcl_demultiplex"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/bcl2fastq/bcl2fastq.diff"
                     },
                     "bclconvert": {
                         "branch": "master",
@@ -56,10 +57,11 @@
                     },
                     "kraken2/kraken2": {
                         "branch": "master",
-                        "git_sha": "653218e79ffa76fde20319e9062f8b8da5cf7555",
+                        "git_sha": "ca87ad032a62f025f0c373facacef2df0c5411b2",
                         "installed_by": [
                             "fastq_contam_seqtk_kraken"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/kraken2/kraken2/kraken2-kraken2.diff"
                     },
                     "md5sum": {
                         "branch": "master",
@@ -109,7 +111,7 @@
                     },
                     "fastq_contam_seqtk_kraken": {
                         "branch": "master",
-                        "git_sha": "dedc0e31087f3306101c38835d051bf49789445a",
+                        "git_sha": "cfd937a668919d948f6fcbf4218e79de50c2f36f",
                         "installed_by": [
                             "subworkflows"
                         ]

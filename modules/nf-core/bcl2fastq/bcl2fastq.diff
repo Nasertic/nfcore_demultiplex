@@ -1,0 +1,33 @@
+Changes in module 'nf-core/bcl2fastq'
+--- modules/nf-core/bcl2fastq/main.nf
++++ modules/nf-core/bcl2fastq/main.nf
+@@ -1,6 +1,7 @@
+ process BCL2FASTQ {
+     tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
+     label 'process_high'
++    debug true
+ 
+     container "nf-core/bcl2fastq:2.20.0.422"
+ 
+@@ -31,6 +32,7 @@
+     def input_tar = run_dir.toString().endsWith(".tar.gz") ? true : false
+     def input_dir = input_tar ? run_dir.toString() - '.tar.gz' : run_dir
+     """
++    echo $task.ext.args
+     if [ ! -d ${input_dir} ]; then
+         mkdir -p ${input_dir}
+     fi
+
+--- modules/nf-core/bcl2fastq/meta.yml
++++ modules/nf-core/bcl2fastq/meta.yml
+@@ -9,7 +9,7 @@
+       description: "Demultiplex Illumina BCL files"
+       homepage: "https://support.illumina.com/sequencing/sequencing_software/bcl2fastq-conversion-software"
+       documentation: "https://support.illumina.com/content/dam/illumina-support/documents/documentation/software_documentation/bcl2fastq/bcl2fastq2-v2-20-software-guide-15051736-03.pdf"
+-      licence: "ILLUMINA"
++      licence: ["ILLUMINA"]
+ input:
+   - meta:
+       type: map
+
+************************************************************
