@@ -42,28 +42,34 @@ module load singularity/3.4.1
 #     -c hpc.conf \
      #-resume
 
-nextflow run main.nf -profile test_dragen,singularity -c hpc.conf
+nextflow run main.nf -profile test_dragen,singularity -c hpc.conf --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results'
+nextflow run main.nf \
+        -profile test_dragen,singularity \
+        -c hpc.conf --outdir 'tests/results' \
+        --skip_tools 'kraken'
+
+#nextflow run main.nf -profile test_dragen,singularity -c hpc.conf --NovaSeq --split
 
 
 # Real data iSeq
 # nextflow run main.nf  \
 #    -profile singularity \
-#    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet.csv' \
-#    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_NovaSeq' \
+#    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/sample_sheet.csv' \
+#    --outdir  '/data/scratch/LAB/temp_demultiplex/to_delete/to_delete_no_split' \
 #    --demultiplexer 'dragen' \
 #    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
-#    --sample_size 10000 \
+#    --sample_size 1000 \
 #    --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
 #    #-resume
 
 # Real data NovaSeq
 nextflow run main.nf  \
     -profile singularity \
-    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet_NovaSeq.csv' \
-    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_NovaSeq' \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/sample_sheet_NovaSeq.csv' \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/to_delete/results_NovaSeq' \
     --demultiplexer 'dragen' \
-    -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
-    --sample_size 10000 \
+    -c '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf' \
+    --sample_size 1000 \
     --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
 #    #-resume
 
@@ -85,6 +91,6 @@ nextflow run main.nf  \
     --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_bcl_iSeq' \
     --demultiplexer 'bases2fastq' \
     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
-    --sample_size 10000 \
+    --sample_size 1000 \
     --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
 #    #-resume
