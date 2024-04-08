@@ -42,6 +42,11 @@
                     "format": "file-path",
                     "default": "/data/scratch/LAB/references/FastQ_Screen_Genomes/fastq_screen.conf",
                     "description": "Path to FastQ Screen configuration file."
+                },
+                "no_split": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "TO BE REMOVED --> JUST FOR TESTING TOOL"
                 }
             }
         },
