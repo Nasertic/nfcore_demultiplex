@@ -394,12 +394,20 @@ def extract_csv(input_csv, input_schema=null) {
             key = col.key
             content = row[key]
 
+            if(key == 'samplesheet'){
+                content = content.replace('/data/medper/LAB/', '/mnt/SequencerOutput/')
+            }
+
             if(!(content ==~ col.value['pattern']) && col.value['pattern'] != '' && content != '') {
                 error "[Samplesheet Error] The content of column '$key' on line $row_count does not match the pattern '${col.value['pattern']}'"
             }
 
             if(col.value['content'] == 'path'){
-                output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                if (key == "samplesheet"){
+                    output.add(file(content))
+                } else {
+                    output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                }
             }
             else if(col.value['content'] == 'meta'){
                 for(meta_name : col.value['meta_name'].split(",")){

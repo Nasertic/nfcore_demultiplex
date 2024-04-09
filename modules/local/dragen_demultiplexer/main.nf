@@ -2,7 +2,7 @@ process DRAGEN_DEMULTIPLEXER {
     tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
     label 'dragen'
     queue 'dragen'
-    // debug true
+    debug true
 
     input:
     tuple val(meta), path(samplesheet), val(run_dir)
