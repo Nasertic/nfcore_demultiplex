@@ -404,7 +404,8 @@ def extract_csv(input_csv, input_schema=null) {
 
             if(col.value['content'] == 'path'){
                 if (key == "samplesheet"){
-                    output.add(file(content))
+                    // TODO check this part
+                    output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
