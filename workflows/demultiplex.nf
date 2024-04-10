@@ -361,7 +361,6 @@ def extract_csv(input_csv, input_schema=null) {
                 def wrong_columns = []
                 for(diff : diffs){
                     diff in all_columns ? missing_columns.add(diff) : wrong_columns.add(diff)
-                }
                 if(missing_columns.size() > 0){
                     error "[Samplesheet Error] The column(s) $missing_columns is/are not present. The header should look like: $all_columns"
                 }
