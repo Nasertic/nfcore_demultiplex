@@ -390,11 +390,14 @@ def extract_csv(input_csv, input_schema=null) {
 
         def output = []
         def meta = [:]
+
         for(col : input_schema.columns) {
             key = col.key
             content = row[key]
 
             if(key == 'samplesheet'){
+                commentary = extract_commentary(content)
+                println("The commentary is $commentary")
                 content = content.replace('/data/medper/LAB/', '/mnt/SequencerOutput/')
             }
 
@@ -477,6 +480,23 @@ def extract_csv_fqtk(input_csv) {
     ]
 
     return extract_csv(input_csv, input_schema)
+}
+
+def extract_commentary(sample_sheet){
+    def commentary = ""
+    def headerSection = false
+    new File(sample_sheet).eachLine { line ->
+        if (line.startsWith("[Header]")) {
+            headerSection = true
+        } else if (headerSection && line.startsWith("Description")) {
+            commentary = line.split(',')[1].trim()
+            return  // Terminar el bucle una vez que se ha encontrado el comentario
+        } else if (headerSection && line.startsWith("[")) {
+            headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
+        }
+    }
+
+    return commentary
 }
 
 /*
