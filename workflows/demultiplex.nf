@@ -113,7 +113,6 @@ workflow DEMULTIPLEX {
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
         ch_flowcells = ch_inputs
             .branch { meta, samplesheet, commentary, run ->
-                commentary: commentary.toString()
                 tar: run.toString().endsWith('.tar.gz')
                 dir: true
             }
@@ -411,7 +410,7 @@ def extract_csv(input_csv, input_schema=null) {
                     // TODO check this part
                     // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
-                    output.add(extract_commentary(content))
+                    output.add([extract_commentary(content)])
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
