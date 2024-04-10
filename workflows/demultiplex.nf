@@ -112,7 +112,8 @@ workflow DEMULTIPLEX {
         // Split flowcells into separate channels containg run as tar and run as path
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
         ch_flowcells = ch_inputs
-            .branch { meta, samplesheet, run ->
+            .branch { meta, samplesheet, commentary, run ->
+                commentary: commentary.toString()
                 tar: run.toString().endsWith('.tar.gz')
                 dir: true
             }
@@ -137,6 +138,8 @@ workflow DEMULTIPLEX {
 
     // Merge the two channels back together
     ch_flowcells = ch_flowcells.dir.mix(ch_flowcells_tar_merged)
+
+    ch_flowcells.view()
 
     // RUN demultiplexing
     //
@@ -396,8 +399,6 @@ def extract_csv(input_csv, input_schema=null) {
             content = row[key]
 
             if(key == 'samplesheet'){
-                commentary = extract_commentary(content)
-                println("The commentary is $commentary")
                 content = content.replace('/data/medper/LAB/', '/mnt/SequencerOutput/')
             }
 
@@ -410,6 +411,7 @@ def extract_csv(input_csv, input_schema=null) {
                     // TODO check this part
                     // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
+                    output.add(extract_commentary(content))
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
@@ -498,7 +500,6 @@ def extract_commentary(sample_sheet){
 
     return commentary
 }
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
