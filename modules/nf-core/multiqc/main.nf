@@ -11,6 +11,7 @@ process MULTIQC {
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)
+    val(multiqc_commentary)
 
     output:
     path "*multiqc_report.html", emit: report
@@ -26,6 +27,7 @@ process MULTIQC {
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
+    def multiqc_commentary = "--comment $multiqc_commentary" ?: ''
     """
     multiqc \\
         --force \\
@@ -33,6 +35,7 @@ process MULTIQC {
         $config \\
         $extra_config \\
         $logo \\
+        $multiqc_commentary \\
         .
 
     cat <<-END_VERSIONS > versions.yml

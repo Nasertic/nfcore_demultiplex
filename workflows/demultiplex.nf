@@ -138,8 +138,6 @@ workflow DEMULTIPLEX {
     // Merge the two channels back together
     ch_flowcells = ch_flowcells.dir.mix(ch_flowcells_tar_merged)
 
-    ch_flowcells.view()
-
     // RUN demultiplexing
     //
     ch_raw_fastq = Channel.empty()
@@ -277,7 +275,8 @@ workflow DEMULTIPLEX {
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList()
+            ch_multiqc_logo.toList(),
+            ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
