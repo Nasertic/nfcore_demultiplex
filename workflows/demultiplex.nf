@@ -257,6 +257,7 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: illumina-interop
+    // TODO failing with real data
     if (!("interop" in skip_tools)){
         ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
             if (meta.lane.toInteger() >= 5) {
