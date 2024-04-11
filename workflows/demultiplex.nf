@@ -488,14 +488,16 @@ def extract_csv_fqtk(input_csv) {
     return extract_csv(input_csv, input_schema)
 }
 
-def extract_commentary(sample_sheet){
+def extract_commentary(sample_sheet) {
     def commentary = ""
     def headerSection = false
+
     new File(sample_sheet).eachLine { line ->
         if (line.startsWith("[Header]")) {
             headerSection = true
         } else if (headerSection && line.startsWith("Description")) {
-            commentary = line.split(',')[1].trim()
+            // Extraer el comentario hasta el final de la línea
+            commentary = line.substring("Description=".length()).trim().replace(",", " ")
             return  // Terminar el bucle una vez que se ha encontrado el comentario
         } else if (headerSection && line.startsWith("[")) {
             headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
