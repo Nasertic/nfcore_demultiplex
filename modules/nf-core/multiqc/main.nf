@@ -11,6 +11,7 @@ process MULTIQC {
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)
+    val(run_title)
     val(multiqc_commentary)
 
     output:
@@ -27,6 +28,7 @@ process MULTIQC {
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
+    def run_title = "--title $run_title" ?: ''
     def multiqc_commentary = "--comment $multiqc_commentary" ?: ''
     """
     multiqc \\
@@ -35,6 +37,7 @@ process MULTIQC {
         $config \\
         $extra_config \\
         $logo \\
+        $run_title \\
         $multiqc_commentary \\
         .
 

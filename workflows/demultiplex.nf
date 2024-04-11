@@ -258,6 +258,7 @@ workflow DEMULTIPLEX {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    ch_flowcells.view()
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)
@@ -271,12 +272,15 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
         ch_multiqc_files.collect().dump(tag: "DEMULTIPLEX::MultiQC files",{FormattingService.prettyFormat(it)})
 
+        ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Run title
+        ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
             ch_multiqc_logo.toList(),
-            ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
+            ch_run_title,
+            ch_run_comment
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
