@@ -257,13 +257,14 @@ workflow DEMULTIPLEX {
 
     if (!("interop" in skip_tools)){
         ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
-            if (meta.lane >= 5) {
+            if (meta.lane.toInteger() >= 5) {
                 return [[id: meta.id, lane: meta.lane], "${params.outdir}"]
             }
             else{
                 return [[id: meta.id, lane: meta.lane], "${params.outdir}/${meta.id}"]
             }
         }
+        ch_demultiplex_folders.view()
         INTEROP(
             ch_demultiplex_folders
         )
