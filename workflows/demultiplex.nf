@@ -361,6 +361,7 @@ def extract_csv(input_csv, input_schema=null) {
                 def wrong_columns = []
                 for(diff : diffs){
                     diff in all_columns ? missing_columns.add(diff) : wrong_columns.add(diff)
+                }
                 if(missing_columns.size() > 0){
                     error "[Samplesheet Error] The column(s) $missing_columns is/are not present. The header should look like: $all_columns"
                 }
@@ -409,7 +410,7 @@ def extract_csv(input_csv, input_schema=null) {
                     // TODO check this part
                     // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
-                    output.add([extract_commentary(content)])
+                    output.add(extract_commentary(content))
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
