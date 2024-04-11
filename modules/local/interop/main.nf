@@ -12,7 +12,8 @@ process INTEROP{
     tuple val(meta), path(output_directory)
 
     output:
-    tuple val(meta), path("*.csv")       , emit: "interop_index_summary_report"
+    tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
+    path "versions.yml"                         , emit: versions
 
     script:
     """
@@ -22,5 +23,10 @@ process INTEROP{
     cp $output_directory/Reports/RunInfo.xml $output_directory
 
     interop_index_summary_report $output_directory --csv=1 > interop_index_summary_report.csv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        fastqscreen: \$(echo \$(interop_index-summary 2>&1) | sed 's/^.# Version: v//; s/ .*\$//')
+    END_VERSIONS
     """
 }

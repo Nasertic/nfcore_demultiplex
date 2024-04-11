@@ -254,9 +254,10 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
     }
 
-    if(!"interop" in skip_tools){
+    if (!("interop" in skip_tools)){
         INTEROP(ch_fastq_to_qc)
-        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop.map { meta, interop -> return interop} )
+        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+        ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
 
     // DUMP SOFTWARE VERSIONS
