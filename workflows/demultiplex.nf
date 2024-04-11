@@ -272,7 +272,7 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
         ch_multiqc_files.collect().dump(tag: "DEMULTIPLEX::MultiQC files",{FormattingService.prettyFormat(it)})
 
-        ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Run title
+        ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
         ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
         MULTIQC (
             ch_multiqc_files.collect(),
