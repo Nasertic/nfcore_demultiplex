@@ -170,6 +170,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            ch_demultiplex_reports = DRAGEN_DEMULTIPLEX.out.reports
             break
 
         case 'fqtk':
@@ -255,9 +256,16 @@ workflow DEMULTIPLEX {
     }
 
     if (!("interop" in skip_tools)){
+        ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
+            if (meta.lane >= 5) {
+                return [[id: meta.id, lane: meta.lane], "${params.outdir}"]
+            }
+            else{
+                return [[id: meta.id, lane: meta.lane], "${params.outdir}/${meta.id}"]
+            }
+        }
         INTEROP(
-            ch_fastq_to_qc,
-            params.outdir
+            ch_demultiplex_folders
         )
         ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
         ch_versions = ch_versions.mix(INTEROP.out.versions)
