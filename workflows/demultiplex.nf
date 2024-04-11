@@ -245,6 +245,7 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
 
+    // MODULE: fastq_screen
     if (!("fastq_screen" in skip_tools)){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
@@ -255,6 +256,7 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
     }
 
+    // MODULE: illumina-interop
     if (!("interop" in skip_tools)){
         ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
             if (meta.lane.toInteger() >= 5) {
@@ -507,6 +509,7 @@ def extract_csv_fqtk(input_csv) {
 }
 
 def extract_commentary(sample_sheet) {
+    sample_sheet = sample_sheet.replace("/mnt/SequencerOutput/", "/data/medper/LAB/")
     def commentary = ""
     def headerSection = false
 
