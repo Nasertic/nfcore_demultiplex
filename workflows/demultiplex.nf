@@ -255,7 +255,10 @@ workflow DEMULTIPLEX {
     }
 
     if (!("interop" in skip_tools)){
-        INTEROP(ch_fastq_to_qc)
+        INTEROP(
+            ch_fastq_to_qc,
+            params.outdir
+        )
         ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
         ch_versions = ch_versions.mix(INTEROP.out.versions)
     }

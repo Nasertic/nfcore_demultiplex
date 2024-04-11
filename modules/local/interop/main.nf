@@ -9,7 +9,8 @@ process INTEROP{
         'biocontainers/illumina-interop:1.3.1--hdbdd923_0'}"
 
     input:
-    tuple val(meta), path(output_directory)
+    tuple val(meta), path(reads)
+    path(interop_folder)
 
     output:
     tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
@@ -17,12 +18,11 @@ process INTEROP{
 
     script:
     """
-    echo $meta
-    echo $output_directory
-    cp $output_directory/Reports/IndexMetricsOut.bin $output_directory/InterOp
-    cp $output_directory/Reports/RunInfo.xml $output_directory
+    echo $interop_folder
+    cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
+    cp $interop_folder/Reports/RunInfo.xml $interop_folder
 
-    interop_index_summary_report $output_directory --csv=1 > interop_index_summary_report.csv
+    interop_index-summary $interop_folder --csv=1 > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
