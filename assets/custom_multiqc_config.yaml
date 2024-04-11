@@ -5,4 +5,3 @@ report_header_info:
   - Application Type: "Nextflow Demultiplex: BCLconvert, fastp, Falco, Contamination"
   - Project Type: "Application"
   - Sequencing Platform: "NovaSeq6000"
-  - Sequencing Setup: "2x125"
