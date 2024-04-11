@@ -112,7 +112,7 @@ workflow DEMULTIPLEX {
         // Split flowcells into separate channels containg run as tar and run as path
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
         ch_flowcells = ch_inputs
-            .branch { meta, samplesheet, commentary, run ->
+            .branch { meta, samplesheet, run ->
                 tar: run.toString().endsWith('.tar.gz')
                 dir: true
             }
@@ -392,6 +392,7 @@ def extract_csv(input_csv, input_schema=null) {
 
         def output = []
         def meta = [:]
+        def multiqc_commentary = null
 
         for(col : input_schema.columns) {
             key = col.key
@@ -410,7 +411,8 @@ def extract_csv(input_csv, input_schema=null) {
                     // TODO check this part
                     // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
-                    output.add(extract_commentary(content))
+                    multiqc_commentary = extract_commentary(content)
+                    meta['multiqc_commentary'] = multiqc_commentary
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
