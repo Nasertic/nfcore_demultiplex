@@ -1,5 +1,5 @@
 process BCL2FASTQ {
-    tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
+   tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
     debug true
 

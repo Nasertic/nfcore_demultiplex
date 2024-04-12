@@ -1,7 +1,7 @@
 process BCLCONVERT {
     tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
     label 'process_high'
-
+    debug true
     container "nf-core/bclconvert:4.2.7"
 
     input:
