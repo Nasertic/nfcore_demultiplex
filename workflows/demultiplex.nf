@@ -33,7 +33,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { BCL_DEMULTIPLEX           } from '../subworkflows/nf-core/bcl_demultiplex/main'
+include { BCL_DEMULTIPLEX           } from '../subworkflows/local/bcl_demultiplex/main'
 include { DRAGEN_DEMULTIPLEX        } from '../subworkflows/local/dragen_demultiplex/main'
 include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/nf-core/fastq_contam_seqtk_kraken/main'
 include { BASES_DEMULTIPLEX         } from '../subworkflows/local/bases_demultiplex/main'
@@ -394,12 +394,20 @@ def extract_csv(input_csv, input_schema=null) {
             key = col.key
             content = row[key]
 
+            if(key == 'samplesheet'){
+                content = content.replace('/data/medper/LAB/', '/mnt/SequencerOutput/')
+            }
+
             if(!(content ==~ col.value['pattern']) && col.value['pattern'] != '' && content != '') {
                 error "[Samplesheet Error] The content of column '$key' on line $row_count does not match the pattern '${col.value['pattern']}'"
             }
 
             if(col.value['content'] == 'path'){
-                output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                if (key == "samplesheet"){
+                    output.add(file(content))
+                } else {
+                    output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                }
             }
             else if(col.value['content'] == 'meta'){
                 for(meta_name : col.value['meta_name'].split(",")){
