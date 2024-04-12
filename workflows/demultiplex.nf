@@ -170,7 +170,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_reports = DRAGEN_DEMULTIPLEX.out.reports
+            ch_demultiplex_reports = DRAGEN_DEMULTIPLEX.out.reports.collect()
             break
 
         case 'fqtk':
