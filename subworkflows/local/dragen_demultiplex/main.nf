@@ -8,8 +8,8 @@ include { DRAGEN_DEMULTIPLEXER     } from "../../../modules/local/dragen_demulti
 
 workflow DRAGEN_DEMULTIPLEX {
     take:
-        ch_flowcell     // [[id:"", lane:""],samplesheet.csv, path/to/bcl/files]
-        demultiplexer   // bclconvert or bcl2fastq or dragen
+        ch_flowcell     // [[id:"", lane:""], samplesheet.csv, path/to/bcl/files]
+        demultiplexer   // dragen
 
     main:
         ch_versions = Channel.empty()

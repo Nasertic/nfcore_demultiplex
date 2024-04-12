@@ -48,6 +48,38 @@ nextflow run main.nf \
         -c hpc.conf --outdir 'tests/results' \
         --skip_tools 'kraken'
 
+nextflow run main.nf \
+        -profile test_dragen,singularity \
+        -c hpc.conf --outdir './tests/results_bcl_iSeq' \
+        --demultiplexer 'bclconvert' \
+        --skip_tools 'fastp,falco, fastq_screen, kraken'
+
+nextflow run main.nf \
+        -profile test_dragen,singularity \
+        -c hpc.conf --outdir './tests/results_bcl_iSeq' \
+        --input './assets/sample_sheet_NovaSeq_split_real.csv' \
+        --demultiplexer 'bclconvert' \
+        --skip_tools 'fastp,falco,fastq_screen,kraken'
+
+nextflow run main.nf \
+        -profile test_dragen,singularity \
+        -c hpc.conf --outdir './tests/results/' \
+        --demultiplexer 'bclconvert' \
+        --skip_tools 'fastp,falco,fastq_screen,kraken'
+
+    nextflow run main.nf \
+        -profile test_dragen,singularity \
+        -c hpc.conf --outdir './tests/results/' \
+        --demultiplexer 'bcl2fastq' \
+        --skip_tools 'fastp,falco,fastq_screen,kraken'
+
+#Incluir lane=5
+
+
+#Otra samplesheet de iSeq
+
+/data/medper/LAB/iSeq/Runs_iSeq/20230719_FS10001385_16_BTR67709-2111
+
 #nextflow run main.nf -profile test_dragen,singularity -c hpc.conf --NovaSeq --split
 
 
