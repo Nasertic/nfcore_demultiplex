@@ -170,7 +170,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_reports = DRAGEN_DEMULTIPLEX.out.reports.collect()
+            ch_demultiplex_folders = DRAGEN_DEMULTIPLEX.out.output_folder.collect()
             break
 
         case 'fqtk':
@@ -188,7 +188,7 @@ workflow DEMULTIPLEX {
 
             // Format ch_input like so:
             // [[meta:id], <path to sample names and barcodes in tsv: path>, [<fastq name: string>, <read structure: string>, <path to fastqs: path>]]]
-            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a[0], a[1], b)}
+            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a, a[1], b)}
 
             FQTK_DEMULTIPLEX ( ch_input )
             ch_raw_fastq = ch_raw_fastq.mix(FQTK_DEMULTIPLEX.out.fastq)
@@ -259,20 +259,20 @@ workflow DEMULTIPLEX {
     // MODULE: illumina-interop
     // TODO failing with real data
     if (!("interop" in skip_tools)){
-        ch_demultiplex_folders = ch_demultiplex_reports.map{ it ->
-            if (it[0].lane.toInteger() >= 5) {
-                return [[id: it[0].id, lane: it[0].lane], "${params.outdir}"]
+        ch_demultiplex_folders.each { folderInfo ->
+            def ch_output_folders = folderInfo.collect { meta ->
+                def id = meta.id
+                def lane = meta.lane.toInteger()
+                def basePath = lane >= 5 ? params.outdir : "${params.outdir}/${id}"
+                return [id: id, lane: lane, directory: basePath]
             }
-            else{
-                return [[id: it[0].id, lane: it[0].lane], "${params.outdir}/${it[0].id}"]
-            }
+
+            ch_output_folders.view()
+
+            INTEROP(ch_output_folders)
+            ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+            ch_versions = ch_versions.mix(INTEROP.out.versions)
         }
-        ch_demultiplex_folders.view()
-        INTEROP(
-            ch_demultiplex_folders
-        )
-        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
-        ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
 
     // DUMP SOFTWARE VERSIONS

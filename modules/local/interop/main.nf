@@ -9,14 +9,16 @@ process INTEROP{
         'biocontainers/illumina-interop:1.3.1--hdbdd923_0'}"
 
     input:
-    tuple val(meta), path(interop_folder)
+    val(meta)
 
     output:
-    tuple val(meta), path("*.csv")               , emit: "interop_index_summary_report"
+    tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
     path "versions.yml"                         , emit: versions
 
     script:
+    def interop_folder = '/data/scratch/LAB/temp_demultiplex/to_delete/to_delete_split/smallest_run_iSeq_1'
     """
+    echo $meta
     cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
     cp $interop_folder/Reports/RunInfo.xml $interop_folder
 
