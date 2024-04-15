@@ -82,6 +82,7 @@ workflow DEMULTIPLEX {
     ch_input = file(params.input)
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_output_folders = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -170,7 +171,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_folders = DRAGEN_DEMULTIPLEX.out.output_folder.collect()
+            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
             break
 
         case 'fqtk':
@@ -259,20 +260,15 @@ workflow DEMULTIPLEX {
     // MODULE: illumina-interop
     // TODO failing with real data
     if (!("interop" in skip_tools)){
-        ch_demultiplex_folders.each { folderInfo ->
-            def ch_output_folders = folderInfo.collect { meta ->
-                def id = meta.id
-                def lane = meta.lane.toInteger()
-                def basePath = lane >= 5 ? params.outdir : "${params.outdir}/${id}"
-                return [id: id, lane: lane, directory: basePath]
-            }
-
-            ch_output_folders.view()
-
-            INTEROP(ch_output_folders)
-            ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
-            ch_versions = ch_versions.mix(INTEROP.out.versions)
+        ch_output_folders = ch_output_folders.map{ it ->
+            def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
+            return [it, folderPath]
         }
+        INTEROP(
+            ch_output_folders
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+        ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
 
     // DUMP SOFTWARE VERSIONS

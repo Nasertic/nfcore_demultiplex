@@ -1,7 +1,7 @@
 process INTEROP{
     tag "interop"
     label "process_single"
-    debug true
+    // debug true
 
     conda "interop"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -9,16 +9,14 @@ process INTEROP{
         'biocontainers/illumina-interop:1.3.1--hdbdd923_0'}"
 
     input:
-    val(meta)
+    tuple val(meta), path(interop_folder)
 
     output:
     tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
     path "versions.yml"                         , emit: versions
 
     script:
-    def interop_folder = '/data/scratch/LAB/temp_demultiplex/to_delete/to_delete_split/smallest_run_iSeq_1'
     """
-    echo $meta
     cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
     cp $interop_folder/Reports/RunInfo.xml $interop_folder
 
