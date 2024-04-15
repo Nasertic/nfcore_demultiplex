@@ -258,22 +258,22 @@ workflow DEMULTIPLEX {
 
     // MODULE: illumina-interop
     // TODO failing with real data
-    // if (!("interop" in skip_tools)){
-    //     ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
-    //         if (meta.lane.toInteger() >= 5) {
-    //             return [[id: meta.id, lane: meta.lane], "${params.outdir}"]
-    //         }
-    //         else{
-    //             return [[id: meta.id, lane: meta.lane], "${params.outdir}/${meta.id}"]
-    //         }
-    //     }
-    //     ch_demultiplex_folders.view()
-    //     INTEROP(
-    //         ch_demultiplex_folders
-    //     )
-    //     ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
-    //     ch_versions = ch_versions.mix(INTEROP.out.versions)
-    // }
+    if (!("interop" in skip_tools)){
+        ch_demultiplex_folders = ch_demultiplex_reports.map{ it ->
+            if (it[0].lane.toInteger() >= 5) {
+                return [[id: it[0].id, lane: it[0].lane], "${params.outdir}"]
+            }
+            else{
+                return [[id: it[0].id, lane: it[0].lane], "${params.outdir}/${it[0].id}"]
+            }
+        }
+        ch_demultiplex_folders.view()
+        INTEROP(
+            ch_demultiplex_folders
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+        ch_versions = ch_versions.mix(INTEROP.out.versions)
+    }
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (
