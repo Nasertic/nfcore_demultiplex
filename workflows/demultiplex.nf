@@ -264,7 +264,7 @@ workflow DEMULTIPLEX {
             def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
             return [it, folderPath]
         }
-        ch_output_folders.view()
+
         INTEROP(
             ch_output_folders,
             FASTQ_SCREEN.out.fastq_screen_finished
