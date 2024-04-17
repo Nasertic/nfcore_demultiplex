@@ -16,6 +16,7 @@ process FASTQ_SCREEN{
     tuple val(meta), path('*screen.html')       , emit: fastq_screen_html_report
     tuple val(meta), path('*screen.txt')        , emit: fastq_screen_txt_report
     tuple val(meta), path('*screen.png')        , emit: fastq_screen_image
+    val true                                    , emit: fastq_screen_finished
     path "versions.yml"                         , emit: versions
 
     when:
