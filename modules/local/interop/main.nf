@@ -10,6 +10,7 @@ process INTEROP{
 
     input:
     tuple val(meta), path(interop_folder)
+    val(finished_processes)
 
     output:
     tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
