@@ -258,7 +258,6 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: illumina-interop
-    // TODO failing with real data
     if (!("interop" in skip_tools)){
         ch_output_folders = ch_output_folders.map{ it ->
             def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
