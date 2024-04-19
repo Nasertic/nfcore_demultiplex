@@ -132,3 +132,4 @@ def readgroup_from_fastq(path) {
 
     return rg
 }
+

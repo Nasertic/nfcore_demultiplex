@@ -258,12 +258,12 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: illumina-interop
-        if (!("interop" in skip_tools)){
+    if (!("interop" in skip_tools)){
         ch_output_folders = ch_output_folders.map{ it ->
             def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
             return [it, folderPath]
         }
-        //ch_output_folders.view()
+
         INTEROP(
             ch_output_folders,
             FASTQ_SCREEN.out.fastq_screen_finished

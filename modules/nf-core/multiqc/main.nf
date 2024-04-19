@@ -29,7 +29,7 @@ process MULTIQC {
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
     def run_title = "--title $run_title" ?: ''
-    def multiqc_commentary = "--comment $multiqc_commentary" ?: ''
+    def multiqc_commentary = "--comment \"$multiqc_commentary\"" ?: ''
     """
     multiqc \\
         --force \\
