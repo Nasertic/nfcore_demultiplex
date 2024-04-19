@@ -15,7 +15,5 @@ NovaSeq_run_SampleSheet.csv
 dragen_demultiplex*.out
 tests/
 *.tar.gz
-working_progress.sh
-script.sh
 info.txt
-
+test_*
