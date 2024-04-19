@@ -16,3 +16,4 @@ dragen_demultiplex*.out
 tests/
 *.tar.gz
 info.txt
+sample_sheet_for_runs.csv
