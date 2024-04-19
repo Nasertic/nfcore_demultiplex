@@ -1,5 +1,5 @@
 process BCL2FASTQ {
-   tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
+    tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
     debug true
 
@@ -16,6 +16,7 @@ process BCL2FASTQ {
     tuple val(meta), path("Reports")                             , emit: reports
     tuple val(meta), path("Stats")                               , emit: stats
     tuple val(meta), path("InterOp/*.bin")                       , emit: interop
+    val(meta)                                                    , emit: demultiplex_folders
     path("versions.yml")                                         , emit: versions
 
     when:
@@ -65,7 +66,7 @@ process BCL2FASTQ {
         --sample-sheet ${samplesheet} \\
         --processing-threads ${task.cpus}
 
-    cp -r ${input_dir}/InterOp .
+    cp -r ${input_dir}/InterOp ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

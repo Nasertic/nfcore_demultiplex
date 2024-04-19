@@ -1,5 +1,5 @@
 process BCLCONVERT {
-    tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
+    tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
     debug true
     container "nf-core/bclconvert:4.2.7"
@@ -15,6 +15,7 @@ process BCLCONVERT {
     tuple val(meta), path("Reports")                             , emit: reports
     tuple val(meta), path("Logs")                                , emit: logs
     tuple val(meta), path("InterOp/*.bin")                       , emit: interop
+    val(meta)                                                    , emit: demultiplex_folders
     path("versions.yml")                                         , emit: versions
 
     when:
@@ -62,7 +63,7 @@ process BCLCONVERT {
         --bcl-input-directory ${input_dir} \\
         --sample-sheet ${samplesheet}
 
-    cp -r ${input_dir}/InterOp .
+    cp -r ${input_dir}/InterOp ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

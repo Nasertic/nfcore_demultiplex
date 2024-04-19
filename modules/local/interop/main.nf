@@ -1,7 +1,7 @@
 process INTEROP{
     tag "interop"
     label "process_single"
-    debug true
+    // debug true
 
     conda "interop"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -10,9 +10,10 @@ process INTEROP{
 
     input:
     tuple val(meta), path(interop_folder)
+    val(finished_processes)
 
     output:
-    tuple val(meta), path("*.csv")               , emit: "interop_index_summary_report"
+    tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
     path "versions.yml"                         , emit: versions
 
     script:

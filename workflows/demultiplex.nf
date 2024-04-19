@@ -82,6 +82,7 @@ workflow DEMULTIPLEX {
     ch_input = file(params.input)
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_output_folders = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -156,12 +157,12 @@ workflow DEMULTIPLEX {
         case ['bcl2fastq', 'bclconvert']:
             // SUBWORKFLOW: illumina
             // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
-            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
             BCL_DEMULTIPLEX( ch_flowcells, demultiplexer )
             ch_raw_fastq = ch_raw_fastq.mix( BCL_DEMULTIPLEX.out.fastq )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(BCL_DEMULTIPLEX.out.versions)
+            ch_output_folders = ch_output_folders.mix(BCL_DEMULTIPLEX.out.output_folder)
             break
 
         case 'dragen':
@@ -170,7 +171,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_reports = DRAGEN_DEMULTIPLEX.out.reports
+            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
             break
 
         case 'fqtk':
@@ -188,7 +189,7 @@ workflow DEMULTIPLEX {
 
             // Format ch_input like so:
             // [[meta:id], <path to sample names and barcodes in tsv: path>, [<fastq name: string>, <read structure: string>, <path to fastqs: path>]]]
-            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a[0], a[1], b)}
+            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a, a[1], b)}
 
             FQTK_DEMULTIPLEX ( ch_input )
             ch_raw_fastq = ch_raw_fastq.mix(FQTK_DEMULTIPLEX.out.fastq)
@@ -257,19 +258,15 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: illumina-interop
-    // TODO failing with real data
-    if (!("interop" in skip_tools)){
-        ch_demultiplex_folders = ch_demultiplex_reports.map { meta, _ ->
-            if (meta.lane.toInteger() >= 5) {
-                return [[id: meta.id, lane: meta.lane], "${params.outdir}"]
-            }
-            else{
-                return [[id: meta.id, lane: meta.lane], "${params.outdir}/${meta.id}"]
-            }
+        if (!("interop" in skip_tools)){
+        ch_output_folders = ch_output_folders.map{ it ->
+            def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
+            return [it, folderPath]
         }
-        ch_demultiplex_folders.view()
+        //ch_output_folders.view()
         INTEROP(
-            ch_demultiplex_folders
+            ch_output_folders,
+            FASTQ_SCREEN.out.fastq_screen_finished
         )
         ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
         ch_versions = ch_versions.mix(INTEROP.out.versions)

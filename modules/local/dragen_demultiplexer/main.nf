@@ -2,20 +2,21 @@ process DRAGEN_DEMULTIPLEXER {
     tag {"${meta.lane < 5 ? meta.id + '.' + meta.lane : meta.id}" }
     label 'dragen'
     queue 'dragen'
-    debug true
+    // debug true
 
     input:
     tuple val(meta), path(samplesheet), val(run_dir)
 
     output:
-    tuple val(meta), path("**_S[1-9]*_R?_00?.fastq.gz")          , emit: fastq
-    tuple val(meta), path("**_S[1-9]*_I?_00?.fastq.gz")          , optional:true, emit: fastq_idx
-    tuple val(meta), path("**Undetermined_S0*_R?_00?.fastq.gz")  , optional:true, emit: undetermined
-    tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")  , optional:true, emit: undetermined_idx
-    tuple val(meta), path("Reports/legacy/Stats")                , emit: stats
-    tuple val(meta), path("Reports")                             , emit: reports
-    tuple val(meta), path("InterOp/*.bin")                       , emit: interop
-    path("versions.yml")                                         , emit: versions
+    tuple val(meta), path("**_S[1-9]*_R?_00?.fastq.gz")             , emit: fastq
+    tuple val(meta), path("**_S[1-9]*_I?_00?.fastq.gz")             , optional:true, emit: fastq_idx
+    tuple val(meta), path("**Undetermined_S0*_R?_00?.fastq.gz")     , optional:true, emit: undetermined
+    tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")     , optional:true, emit: undetermined_idx
+    tuple val(meta), path("Reports/legacy/Stats")                   , emit: stats
+    tuple val(meta), path("Reports")                                , emit: reports
+    tuple val(meta), path("InterOp/*.bin")                          , emit: interop
+    val(meta)                                                       , emit: demultiplex_folders
+    path("versions.yml")                                            , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
