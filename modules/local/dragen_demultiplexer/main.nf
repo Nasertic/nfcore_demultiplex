@@ -40,10 +40,15 @@ process DRAGEN_DEMULTIPLEXER {
     /opt/edico/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
         --bcl-input-directory \$dragen_input_directory \
         --intermediate-results-dir /staging/LAB/tmp/ \
-        --output-directory ./ --force \
+        --output-directory $params.outdir --force \
         --sample-sheet $samplesheet
 
-    cp -r \$dragen_input_directory/InterOp ./
+    cp -r \$dragen_input_directory/InterOp $params.outdir
+
+    ln -s ${params.outdir} ./
+    cp -r ${params.outdir}/Reports ./
+    cp -r ${params.outdir}/Reports/legacy ./
+    cp -r ${params.outdir}/InterOp ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
