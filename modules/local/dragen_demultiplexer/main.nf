@@ -36,19 +36,31 @@ process DRAGEN_DEMULTIPLEXER {
     fi
 
     dragen_input_directory=\$(echo ${run_dir} | sed 's/\\/data\\/medper\\/LAB/\\/mnt\\/SequencerOutput/')
+    if [[ ${meta.lane} -lt 5 ]]; then
+        output_directory=${params.outdir}/${meta.id}/
+    else
+        output_directory=${params.outdir}
+    fi
 
     /opt/edico/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
         --bcl-input-directory \$dragen_input_directory \
         --intermediate-results-dir /staging/LAB/tmp/ \
-        --output-directory $params.outdir --force \
+        --output-directory \$output_directory --force \
         --sample-sheet $samplesheet
 
     cp -r \$dragen_input_directory/InterOp $params.outdir
 
     ln -s ${params.outdir} ./
-    cp -r ${params.outdir}/Reports ./
-    cp -r ${params.outdir}/Reports/legacy ./
     cp -r ${params.outdir}/InterOp ./
+
+    if [[ ${meta.lane} -lt 5 ]]; then
+        cp -r ${params.outdir}/${meta.id}/Reports ./
+        cp -r ${params.outdir}/${meta.id}/Reports/legacy ./
+    else
+        cp -r ${params.outdir}/Reports ./
+        cp -r ${params.outdir}/Reports/legacy ./
+    fi
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
