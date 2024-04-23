@@ -14,7 +14,7 @@ process DRAGEN_DEMULTIPLEXER {
     tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")     , optional:true, emit: undetermined_idx
     tuple val(meta), path("Reports/legacy/Stats")                   , emit: stats
     tuple val(meta), path("Reports")                                , emit: reports
-    tuple val(meta), path("InterOp/*.bin")                          , optional:true, emit: interop
+    tuple val(meta), path("InterOp/*.bin")                          , emit: interop
     val(meta)                                                       , emit: demultiplex_folders
     path("versions.yml")                                            , emit: versions
 
@@ -29,9 +29,8 @@ process DRAGEN_DEMULTIPLEXER {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
-    // TODO interop
-    """
 
+    """
     dragen_input_directory=\$(echo ${run_dir} | sed 's/\\/data\\/medper\\/LAB/\\/mnt\\/SequencerOutput/')
 
     /opt/edico/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
@@ -40,7 +39,7 @@ process DRAGEN_DEMULTIPLEXER {
         --output-directory ./ --force \
         --sample-sheet $samplesheet
 
-    cp -r \$dragen_input_directory/InterOp $params.outdir
+    cp -r \$dragen_input_directory/InterOp ./
 
 
     cat <<-END_VERSIONS > versions.yml
