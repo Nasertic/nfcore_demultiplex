@@ -54,6 +54,7 @@ include { FASTP                         } from '../modules/nf-core/fastp/main'
 include { FALCO                         } from '../modules/nf-core/falco/main'
 include { KRAKEN2_KRAKEN2               } from '../modules/nf-core/kraken2/kraken2/main'
 include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/main'
+include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
@@ -81,6 +82,7 @@ workflow DEMULTIPLEX {
     ch_input = file(params.input)
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_output_folders = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -169,6 +171,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
             break
 
         case 'fqtk':
@@ -186,7 +189,7 @@ workflow DEMULTIPLEX {
 
             // Format ch_input like so:
             // [[meta:id], <path to sample names and barcodes in tsv: path>, [<fastq name: string>, <read structure: string>, <path to fastqs: path>]]]
-            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a[0], a[1], b)}
+            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a, a[1], b)}
 
             FQTK_DEMULTIPLEX ( ch_input )
             ch_raw_fastq = ch_raw_fastq.mix(FQTK_DEMULTIPLEX.out.fastq)
@@ -234,7 +237,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db && !("kraken" in skip_tools)){
+    if (kraken_db && ("fastq_screen" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
@@ -243,6 +246,7 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
 
+    // MODULE: fastq_screen
     if (!("fastq_screen" in skip_tools)){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
@@ -251,6 +255,21 @@ workflow DEMULTIPLEX {
         )
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_SCREEN.out.fastq_screen_txt_report.map { meta, txt -> return txt} )
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
+    }
+
+    // MODULE: illumina-interop
+    if (!("interop" in skip_tools)){
+        ch_output_folders = ch_output_folders.map{ it ->
+            def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
+            return [it, folderPath]
+        }
+
+        INTEROP(
+            ch_output_folders,
+            FASTQ_SCREEN.out.fastq_screen_finished
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+        ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
 
     // DUMP SOFTWARE VERSIONS
@@ -271,11 +290,15 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
         ch_multiqc_files.collect().dump(tag: "DEMULTIPLEX::MultiQC files",{FormattingService.prettyFormat(it)})
 
+        ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
+        ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList()
+            ch_multiqc_logo.toList(),
+            ch_run_title,
+            ch_run_comment
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
@@ -390,6 +413,8 @@ def extract_csv(input_csv, input_schema=null) {
 
         def output = []
         def meta = [:]
+        def multiqc_commentary = null
+
         for(col : input_schema.columns) {
             key = col.key
             content = row[key]
@@ -404,7 +429,11 @@ def extract_csv(input_csv, input_schema=null) {
 
             if(col.value['content'] == 'path'){
                 if (key == "samplesheet"){
+                    // TODO check this part
+                    // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
+                    multiqc_commentary = extract_commentary(content)
+                    meta['multiqc_commentary'] = multiqc_commentary
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
@@ -477,6 +506,25 @@ def extract_csv_fqtk(input_csv) {
     return extract_csv(input_csv, input_schema)
 }
 
+def extract_commentary(sample_sheet) {
+    sample_sheet = sample_sheet.replace("/mnt/SequencerOutput/", "/data/medper/LAB/")
+    def commentary = ""
+    def headerSection = false
+
+    new File(sample_sheet).eachLine { line ->
+        if (line.startsWith("[Header]")) {
+            headerSection = true
+        } else if (headerSection && line.startsWith("Description")) {
+            // Extraer el comentario hasta el final de la línea
+            commentary = line.substring("Description=".length()).trim().replace(",", " ")
+            return  // Terminar el bucle una vez que se ha encontrado el comentario
+        } else if (headerSection && line.startsWith("[")) {
+            headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
+        }
+    }
+
+    return commentary
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END

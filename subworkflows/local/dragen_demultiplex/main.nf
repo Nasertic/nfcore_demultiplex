@@ -12,11 +12,12 @@ workflow DRAGEN_DEMULTIPLEX {
         demultiplexer   // dragen
 
     main:
-        ch_versions = Channel.empty()
-        ch_fastq    = Channel.empty()
-        ch_reports  = Channel.empty()
-        ch_stats    = Channel.empty()
-        ch_interop  = Channel.empty()
+        ch_versions             = Channel.empty()
+        ch_fastq                = Channel.empty()
+        ch_reports              = Channel.empty()
+        ch_stats                = Channel.empty()
+        ch_interop              = Channel.empty()
+        ch_demultiplex_folders  = Channel.empty()
 
         // Split flowcells into separate channels containg run as tar and run as path
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
@@ -42,22 +43,24 @@ workflow DRAGEN_DEMULTIPLEX {
         // MODULE: DRAGEN
         // Demultiplex the bcl files
         DRAGEN_DEMULTIPLEXER( ch_flowcells )
-        ch_fastq    = ch_fastq.mix(DRAGEN_DEMULTIPLEXER.out.fastq)
-        ch_interop  = ch_interop.mix(DRAGEN_DEMULTIPLEXER.out.interop)
-        ch_reports  = ch_reports.mix(DRAGEN_DEMULTIPLEXER.out.reports)
-        ch_stats    = ch_stats.mix(DRAGEN_DEMULTIPLEXER.out.stats)
-        ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEXER.out.versions)
+        ch_fastq                    = ch_fastq.mix(DRAGEN_DEMULTIPLEXER.out.fastq)
+        ch_interop                  = ch_interop.mix(DRAGEN_DEMULTIPLEXER.out.interop)
+        ch_reports                  = ch_reports.mix(DRAGEN_DEMULTIPLEXER.out.reports)
+        ch_stats                    = ch_stats.mix(DRAGEN_DEMULTIPLEXER.out.stats)
+        ch_demultiplex_folders      = ch_demultiplex_folders.mix(DRAGEN_DEMULTIPLEXER.out.demultiplex_folders)
+        ch_versions                 = ch_versions.mix(DRAGEN_DEMULTIPLEXER.out.versions)
 
 
         // Generate meta for each fastq
         ch_fastq_with_meta = generate_fastq_meta(ch_fastq)
 
     emit:
-        fastq    = ch_fastq_with_meta
-        reports  = ch_reports
-        stats    = ch_stats
-        interop  = ch_interop
-        versions = ch_versions
+        fastq           = ch_fastq_with_meta
+        reports         = ch_reports
+        stats           = ch_stats
+        interop         = ch_interop
+        output_folder   = ch_demultiplex_folders
+        versions        = ch_versions
 }
 
 /*
@@ -129,3 +132,4 @@ def readgroup_from_fastq(path) {
 
     return rg
 }
+
