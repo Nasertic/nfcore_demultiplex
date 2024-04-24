@@ -263,11 +263,15 @@ workflow DEMULTIPLEX {
             def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
             return [it, folderPath]
         }
-
-        INTEROP(
-            ch_output_folders,
-            FASTQ_SCREEN.out.fastq_screen_finished
-        )
+        // Check if "fastq_screen" is skipped
+        if ("fastq_screen" in skip_tools) {
+            INTEROP( ch_output_folders, [] )
+        } else {
+            INTEROP(
+                ch_output_folders,
+                FASTQ_SCREEN.out.fastq_screen_finished
+            )
+        }
         ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
         ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
