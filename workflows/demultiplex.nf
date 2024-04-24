@@ -246,7 +246,7 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
 
-    // MODULE: fastq_screen
+    // MODULE: fastq_screen // kraken excluding
     if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
