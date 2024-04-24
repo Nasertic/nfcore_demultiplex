@@ -23,6 +23,7 @@ process INTEROP{
 
     interop_index-summary $interop_folder --csv=1 > interop_index_summary_report.csv
 
+    // plot_by_lane $interop_folder
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         fastqscreen: \$(echo \$(interop_index-summary 2>&1) | sed 's/^.# Version: v//; s/ .*\$//')
