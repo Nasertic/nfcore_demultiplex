@@ -16,6 +16,7 @@ process INTEROP{
     tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
     path "versions.yml"                         , emit: versions
 
+    // plot_by_lane $interop_folder
     script:
     """
     cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
@@ -23,7 +24,6 @@ process INTEROP{
 
     interop_index-summary $interop_folder --csv=1 > interop_index_summary_report.csv
 
-    // plot_by_lane $interop_folder
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         fastqscreen: \$(echo \$(interop_index-summary 2>&1) | sed 's/^.# Version: v//; s/ .*\$//')
