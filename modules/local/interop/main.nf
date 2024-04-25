@@ -10,6 +10,7 @@ process INTEROP{
 
     input:
     tuple val(meta), path(interop_folder)
+    path(flowcell)
     val(finished_processes)
 
     output:
@@ -22,7 +23,8 @@ process INTEROP{
     cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
     cp $interop_folder/Reports/RunInfo.xml $interop_folder
 
-    interop_index-summary $interop_folder --csv=1 > interop_index_summary_report.csv
+    interop_summary $flowcell --csv=1               > interop_summary_report.csv
+    interop_index-summary $interop_folder --csv=1   > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
