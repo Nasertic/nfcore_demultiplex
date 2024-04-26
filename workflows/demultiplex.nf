@@ -266,7 +266,6 @@ workflow DEMULTIPLEX {
 
         INTEROP(
             ch_output_folders,
-            ch_flowcells,
             FASTQ_SCREEN.out.fastq_screen_finished
         )
         ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
