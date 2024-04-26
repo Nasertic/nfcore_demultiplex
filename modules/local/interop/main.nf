@@ -14,7 +14,8 @@ process INTEROP{
     val(finished_processes)
 
     output:
-    tuple val(meta), path("*.csv")              , emit: "interop_index_summary_report"
+    tuple val(meta), path("interop_summary*.csv")               , emit: "interop_summary_report"
+    tuple val(meta), path("*index_summary*.csv")                , emit: "interop_index_summary_report"
     path "versions.yml"                         , emit: versions
 
     // plot_by_lane $interop_folder
