@@ -55,6 +55,7 @@ include { FALCO                         } from '../modules/nf-core/falco/main'
 include { KRAKEN2_KRAKEN2               } from '../modules/nf-core/kraken2/kraken2/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
+include { RSYNC                         } from '../modules/local/rsync/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 
 /*
@@ -250,6 +251,36 @@ workflow DEMULTIPLEX {
         )
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
+    }
+
+    // MODULE: fastq_screen
+    if (!("fastq_screen" in skip_tools)){
+        FASTQ_SCREEN(
+            ch_fastq_to_qc,
+            fastq_screen_config,
+            fastq_screen_subset
+        )
+        ch_multiqc_files = ch_multiqc_files.mix( FASTQ_SCREEN.out.fastq_screen_txt_report.map { meta, txt -> return txt} )
+        ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
+    }
+
+    // MODULE: illumina-interop
+    if (!("interop" in skip_tools)){
+        ch_output_folders = ch_output_folders.map{ it ->
+            def folderPath = it.lane == "all" ? params.outdir : "${params.outdir}/${it.id}"
+            return [it, folderPath]
+        }
+        // Check if "fastq_screen" is skipped
+        if ("fastq_screen" in skip_tools) {
+            INTEROP( ch_output_folders, [] )
+        } else {
+            INTEROP(
+                ch_output_folders,
+                FASTQ_SCREEN.out.fastq_screen_finished
+            )
+        }
+        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+        ch_versions = ch_versions.mix(INTEROP.out.versions)
     }
 
     // DUMP SOFTWARE VERSIONS
