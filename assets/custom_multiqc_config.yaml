@@ -1,0 +1,7 @@
+custom_logo_url: "https://www.nasertic.es/es"
+custom_logo_title: "Nasertic - Navarra de Servicios y Tecnologias"
+report_header_info:
+  - Contact E-mail: "secuenciacion@nasertic.es"
+  - Application Type: "Nextflow Demultiplex: BCLconvert, fastp, Falco, Contamination"
+  - Project Type: "Application"
+  - Sequencing Platform: "NovaSeq6000"

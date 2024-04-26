@@ -20,8 +20,8 @@ log.info logo + paramsSummaryLog(workflow) + citation
 */
 
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.fromPath("$projectDir/assets/custom_multiqc_config.yaml", checkIfExists: true)
+ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.fromPath("$projectDir/assets/LogoNasertic.png", checkIfExists: true)
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
 /*
@@ -53,6 +53,8 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS   } from '../modules/nf-core/custom/dumpso
 include { FASTP                         } from '../modules/nf-core/fastp/main'
 include { FALCO                         } from '../modules/nf-core/falco/main'
 include { KRAKEN2_KRAKEN2               } from '../modules/nf-core/kraken2/kraken2/main'
+include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/main'
+include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
 include { RSYNC                         } from '../modules/local/rsync/main'
@@ -69,16 +71,19 @@ def multiqc_report = []
 
 workflow DEMULTIPLEX {
     // Value inputs
-    demultiplexer = params.demultiplexer                                   // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
-    trim_fastq    = params.trim_fastq                                      // boolean: true, false
-    skip_tools    = params.skip_tools ? params.skip_tools.split(',') : []  // list: [falco, fastp, multiqc]
-    sample_size   = params.sample_size                                     // int
-    kraken_db     = params.kraken_db                                       // path
+    demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
+    trim_fastq              = params.trim_fastq                                         // boolean: true, false
+    skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
+    sample_size             = params.sample_size                                        // int
+    kraken_db               = params.kraken_db                                          // path
+    fastq_screen_config     = params.fastq_screen_config                                // path
+    fastq_screen_subset     = params.fastq_screen_subset                                // int
 
     // Channel inputs
     ch_input = file(params.input)
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_output_folders = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -167,15 +172,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            break
-
-
-        case 'dragen':
-            DRAGEN_DEMULTIPLEX( ch_flowcells, demultiplexer )
-            ch_raw_fastq = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
-            ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
             break
 
         case 'fqtk':
@@ -193,7 +190,7 @@ workflow DEMULTIPLEX {
 
             // Format ch_input like so:
             // [[meta:id], <path to sample names and barcodes in tsv: path>, [<fastq name: string>, <read structure: string>, <path to fastqs: path>]]]
-            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a[0], a[1], b)}
+            ch_input = ch_flowcells.merge( fastqs_with_paths ) { a,b -> tuple(a, a[1], b)}
 
             FQTK_DEMULTIPLEX ( ch_input )
             ch_raw_fastq = ch_raw_fastq.mix(FQTK_DEMULTIPLEX.out.fastq)
@@ -236,18 +233,15 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FALCO.out.versions)
     }
 
-
-
     // MODULE: md5sum
     // Split file list into separate channels entries and generate a checksum for each
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db){
+    if (kraken_db && ("fastq_screen" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
-            [sample_size],
-            kraken_db
+            [sample_size],  kraken_db
         )
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
@@ -301,11 +295,15 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
         ch_multiqc_files.collect().dump(tag: "DEMULTIPLEX::MultiQC files",{FormattingService.prettyFormat(it)})
 
+        ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
+        ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList()
+            ch_multiqc_logo.toList(),
+            ch_run_title,
+            ch_run_comment
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
@@ -420,16 +418,30 @@ def extract_csv(input_csv, input_schema=null) {
 
         def output = []
         def meta = [:]
+        def multiqc_commentary = null
+
         for(col : input_schema.columns) {
             key = col.key
             content = row[key]
+
+            if(key == 'samplesheet'){
+                content = content.replace('/data/medper/LAB/', '/mnt/SequencerOutput/')
+            }
 
             if(!(content ==~ col.value['pattern']) && col.value['pattern'] != '' && content != '') {
                 error "[Samplesheet Error] The content of column '$key' on line $row_count does not match the pattern '${col.value['pattern']}'"
             }
 
             if(col.value['content'] == 'path'){
-                output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                if (key == "samplesheet"){
+                    // TODO check this part
+                    // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
+                    output.add(file(content))
+                    multiqc_commentary = extract_commentary(content)
+                    meta['multiqc_commentary'] = multiqc_commentary
+                } else {
+                    output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
+                }
             }
             else if(col.value['content'] == 'meta'){
                 for(meta_name : col.value['meta_name'].split(",")){
@@ -499,6 +511,25 @@ def extract_csv_fqtk(input_csv) {
     return extract_csv(input_csv, input_schema)
 }
 
+def extract_commentary(sample_sheet) {
+    sample_sheet = sample_sheet.replace("/mnt/SequencerOutput/", "/data/medper/LAB/")
+    def commentary = ""
+    def headerSection = false
+
+    new File(sample_sheet).eachLine { line ->
+        if (line.startsWith("[Header]")) {
+            headerSection = true
+        } else if (headerSection && line.startsWith("Description")) {
+            // Extraer el comentario hasta el final de la línea
+            commentary = line.substring("Description=".length()).trim().replace(",", " ")
+            return  // Terminar el bucle una vez que se ha encontrado el comentario
+        } else if (headerSection && line.startsWith("[")) {
+            headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
+        }
+    }
+
+    return commentary
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
