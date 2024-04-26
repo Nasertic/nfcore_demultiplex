@@ -20,10 +20,19 @@
                 "pattern": "^\\S+\\.csv$"
             },
             "lane": {
-                "type": "integer",
-                "description": "Lane number",
-                "minimum": 1,
-                "maximum": 8
+                "oneOf": [
+                    {
+                        "type": "integer",
+                        "description": "Lane number",
+                        "minimum": 1,
+                        "maximum": 8
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lane number",
+                        "enum": ["all"]
+                    }
+                ]
             },
             "flow_cell": {
                 "type": "string",

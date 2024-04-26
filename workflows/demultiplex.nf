@@ -57,6 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
+include { RSYNC                         } from '../modules/local/rsync/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 
 /*
@@ -260,7 +261,7 @@ workflow DEMULTIPLEX {
     // MODULE: illumina-interop
     if (!("interop" in skip_tools)){
         ch_output_folders = ch_output_folders.map{ it ->
-            def folderPath = it.lane.toInteger() >= 5 ? params.outdir : "${params.outdir}/${it.id}"
+            def folderPath = it.lane == "all" ? params.outdir : "${params.outdir}/${it.id}"
             return [it, folderPath]
         }
         // Check if "fastq_screen" is skipped
