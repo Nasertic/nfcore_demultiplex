@@ -237,8 +237,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    // TODO enable kraken flag
-    if (kraken_db && ("fastq_screen" in skip_tools || params.kraken == 'true')){
+    if (kraken_db && (params.kraken == 'true')){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
