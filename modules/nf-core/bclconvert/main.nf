@@ -1,5 +1,5 @@
 process BCLCONVERT {
-    tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
+    tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
 
     container "nf-core/bclconvert:4.2.7"
