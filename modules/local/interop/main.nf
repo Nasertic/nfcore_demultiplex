@@ -17,6 +17,7 @@ process INTEROP{
     path "versions.yml"                                         , emit: versions
 
     script:
+    // Change to channel?
     """
     cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
     cp $interop_folder/Reports/RunInfo.xml $interop_folder
