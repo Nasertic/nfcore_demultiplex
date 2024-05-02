@@ -526,6 +526,10 @@ def extract_commentary(sample_sheet) {
 
     return commentary
 }
+
+def extract_client_information(sample_sheet){
+    //TODO
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
