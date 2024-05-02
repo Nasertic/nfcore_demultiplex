@@ -1,5 +1,5 @@
 process DRAGEN_DEMULTIPLEXER {
-    tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
+    tag {"${meta.id}" }
     label 'dragen'
     queue 'dragen'
     // debug true
