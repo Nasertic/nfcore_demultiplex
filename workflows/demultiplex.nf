@@ -528,7 +528,20 @@ def extract_commentary(sample_sheet) {
 }
 
 def extract_client_information(sample_sheet){
-    //TODO
+    sample_sheet = sample_sheet.replace("/mnt/SequencerOutput/", "/data/medper/LAB/")
+    def client = ""
+    def headerSection = false
+    new File(sample_sheet).eachLine { line ->
+        if (line.startsWith("[Header]")) {
+            headerSection = true
+        } else if (headerSection && line.startsWith("Investigator Name")) {
+            // Extraer el comentario hasta el final de la línea
+            client = line.substring("Client=".length()).trim().replace(",", " ")
+            return  // Terminar el bucle una vez que se ha encontrado el comentario
+        } else if (headerSection && line.startsWith("[")) {
+            headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
+        }
+    }
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
