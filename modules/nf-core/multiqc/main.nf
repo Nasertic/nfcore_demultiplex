@@ -13,6 +13,7 @@ process MULTIQC {
     path(multiqc_logo)
     val(run_title)
     val(multiqc_commentary)
+    val(client_information)
 
     output:
     path "*multiqc_report.html", emit: report
@@ -30,6 +31,7 @@ process MULTIQC {
     def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
     def run_title = "--title $run_title" ?: ''
     def multiqc_commentary = "--comment \"$multiqc_commentary\"" ?: ''
+    def client_information = "--intro_text \"$client_information\"" ?: ''
     """
     multiqc \\
         --force \\
@@ -39,6 +41,7 @@ process MULTIQC {
         $logo \\
         $run_title \\
         $multiqc_commentary \\
+        $client_information \\
         .
 
     cat <<-END_VERSIONS > versions.yml

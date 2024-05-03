@@ -293,13 +293,15 @@ workflow DEMULTIPLEX {
 
         ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
         ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
+        ch_run_client       = ch_flowcells.map{it[0]['client']}                   // Client of the run
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
             ch_multiqc_logo.toList(),
             ch_run_title,
-            ch_run_comment
+            ch_run_comment,
+            ch_run_client
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
@@ -430,11 +432,12 @@ def extract_csv(input_csv, input_schema=null) {
 
             if(col.value['content'] == 'path'){
                 if (key == "samplesheet"){
-                    // TODO check this part
-                    // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
                     multiqc_commentary = extract_commentary(content)
                     meta['multiqc_commentary'] = multiqc_commentary
+
+                    client_information = extract_client_information(content)
+                    meta['client'] = client_information
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
