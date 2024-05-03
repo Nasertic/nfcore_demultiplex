@@ -293,7 +293,8 @@ workflow DEMULTIPLEX {
 
         ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
         ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
-        ch_run_client       = ch_flowcells.map{it[0]['client']}                   // Client of the run
+        ch_run_client = ch_flowcells.map { it[0]['client'] ?: "No client information" }
+
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
