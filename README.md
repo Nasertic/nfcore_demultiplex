@@ -45,7 +45,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 4. [md5sum](#md5sum) - Creates an MD5 (128-bit) checksum of every fastq.
 5. [MultiQC](#multiqc) - aggregate report, describing results of the whole pipeline
 
-![subway map](docs/demultiplex.png)
+![subway map](docs/pipeline_image.png)
 
 ## Usage
 
