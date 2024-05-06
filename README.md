@@ -21,7 +21,7 @@
 
 **nf-core/demultiplex** is a bioinformatics pipeline used to demultiplex the raw data produced by next generation sequencing machines. The following platforms are supported:
 
-1. Illumina (via `bcl2fastq` or `bclconvert`)
+1. Illumina (via `bcl2fastq`, `bclconvert` or `dragen`)
 2. Element Biosciences (via `bases2fastq`)
 3. Singular Genomics (via [`sgdemux`](https://github.com/Singular-Genomics/singular-demux))
 4. FASTQ files with user supplied read structures (via [`fqtk`](https://github.com/fulcrumgenomics/fqtk))
