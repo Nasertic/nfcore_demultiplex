@@ -42,8 +42,10 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 2. [fastp](#fastp) - Adapter and quality trimming
 3. [Falco](#falco) - Raw read QC
-4. [md5sum](#md5sum) - Creates an MD5 (128-bit) checksum of every fastq.
-5. [MultiQC](#multiqc) - aggregate report, describing results of the whole pipeline
+4. [Fastq screen](#fastq_screen) - Mapping reads to organisms
+5. [Kraken](#kraken) - Contamination check
+6. [md5sum](#md5sum) - Creates an MD5 (128-bit) checksum of every fastq.
+7. [MultiQC](#multiqc) - aggregate report, describing results of the whole pipeline
 
 ![subway map](docs/pipeline_image.png)
 
