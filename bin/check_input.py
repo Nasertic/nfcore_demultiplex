@@ -6,6 +6,7 @@ from sample_sheet import SampleSheet
 
 file = "SampleSheet.csv"
 
+
 def check_for_data_section(file_name:str):
     try:
         SampleSheet(file_name)
