@@ -1,6 +1,7 @@
+import json
 import os
 import sys
-import json
+
 from sample_sheet import SampleSheet
 
 file = "SampleSheet.csv"
@@ -13,7 +14,7 @@ def check_for_data_section(file_name:str):
         if "Header for [Data] section is not allowed to have empty fields" in str(e):
             # Modify the sample sheet to remove that empty field from the Data header
             new_file = open("/home/projects/LAB/scripts/demultiplex_scripts/Demultiplex_enhanced/new_sample_sheet.csv", "w")
-            with open(file_name, "r") as file:
+            with open(file_name) as file:
                 lines = file.readlines()
                 for i in range(len(lines)):
                     if i == 0:
