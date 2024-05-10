@@ -59,6 +59,8 @@ include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
 include { RSYNC                         } from '../modules/local/rsync/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
+include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
+include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,6 +80,12 @@ workflow DEMULTIPLEX {
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
+    taxlevel                = params.taxlevel                                           // list: [D,P,C,O,F,G,S,S1]
+    save_output_fastqs      = params.save_output_fastqs                                 // boolean: true, false
+    save_reads_assignment   = params.save_reads_assignment                              // boolean: true, false
+    ontreads                = params.ontreads                                           // boolean: true, false
+    readlen                 = params.readlen                                            // int
+    run_kraken2             = params.run_kraken2                                            // boolean: true, false
 
     // Channel inputs
     ch_input = file(params.input)
@@ -238,7 +246,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db && !("kraken" in skip_tools)){
+    if (run_kraken2 && kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
