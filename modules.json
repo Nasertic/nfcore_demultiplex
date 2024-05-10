@@ -61,20 +61,6 @@
                             "modules"
                         ]
                     },
-                    "krona/kronadb": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": [
-                            "modules"
-                        ]
-                    },
-                    "krona/ktimporttaxonomy": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": [
-                            "fastq_contam_seqtk_kraken"
-                        ]
-                    },
                     "krona/ktimporttext": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
