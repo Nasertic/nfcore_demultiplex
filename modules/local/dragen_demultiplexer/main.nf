@@ -31,10 +31,6 @@ process DRAGEN_DEMULTIPLEXER {
     def args3 = task.ext.args3 ?: ''
 
     """
-    if [ ! -d ${params.outdir} ]; then
-        mkdir -p ${params.outdir}
-    fi
-
     dragen_input_directory=\$(echo ${run_dir} | sed 's/\\/data\\/medper\\/LAB/\\/mnt\\/SequencerOutput/')
 
     /opt/edico/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
@@ -44,6 +40,7 @@ process DRAGEN_DEMULTIPLEXER {
         --sample-sheet $samplesheet
 
     cp -r \$dragen_input_directory/InterOp ./
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

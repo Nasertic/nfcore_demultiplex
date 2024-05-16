@@ -57,7 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-include { RSYNC                         } from '../modules/local/rsync/main'
+// include { RSYNC                         } from '../modules/local/rsync/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
 include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
@@ -246,7 +246,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (run_kraken2 && kraken_db && !("kraken" in skip_tools)){
+    if (kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
@@ -255,8 +255,8 @@ workflow DEMULTIPLEX {
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })
     }
 
-    // MODULE: fastq_screen
-    if (!("fastq_screen" in skip_tools)){
+    // MODULE: fastq_screen // kraken excluding
+    if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -305,13 +305,16 @@ workflow DEMULTIPLEX {
 
         ch_run_title        = ch_flowcells.map{it[0]['id']}                       // Title of the run
         ch_run_comment      = ch_flowcells.map{it[0]['multiqc_commentary']}       // Multiqc commentary of the run
+        ch_run_client       = ch_flowcells.map { it[0]['client'] ?: "No client information" }
+
         MULTIQC (
             ch_multiqc_files.collect(),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
             ch_multiqc_logo.toList(),
             ch_run_title,
-            ch_run_comment
+            ch_run_comment,
+            ch_run_client
         )
         multiqc_report = MULTIQC.out.report.toList()
     }
@@ -442,11 +445,12 @@ def extract_csv(input_csv, input_schema=null) {
 
             if(col.value['content'] == 'path'){
                 if (key == "samplesheet"){
-                    // TODO check this part
-                    // output.add(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/') ? file(content.replace('/mnt/SequencerOutput/', '/data/medper/LAB/'), checkIfExists:true) : col.value['default'] ?: [])
                     output.add(file(content))
                     multiqc_commentary = extract_commentary(content)
                     meta['multiqc_commentary'] = multiqc_commentary
+
+                    client_information = extract_client_information(content)
+                    meta['client'] = client_information
                 } else {
                     output.add(content ? file(content, checkIfExists:true) : col.value['default'] ?: [])
                 }
@@ -537,6 +541,24 @@ def extract_commentary(sample_sheet) {
     }
 
     return commentary
+}
+
+def extract_client_information(sample_sheet){
+    sample_sheet = sample_sheet.replace("/mnt/SequencerOutput/", "/data/medper/LAB/")
+    def client = ""
+    def headerSection = false
+    new File(sample_sheet).eachLine { line ->
+        if (line.startsWith("[Header]")) {
+            headerSection = true
+        } else if (headerSection && line.startsWith("Investigator Name")) {
+            // Extraer el comentario hasta el final de la línea
+            client = line.substring("Investigator Name=".length()).trim().replace(",", " ")
+            return  // Terminar el bucle una vez que se ha encontrado el comentario
+        } else if (headerSection && line.startsWith("[")) {
+            headerSection = false  // Salir de la sección de encabezado si se encuentra otra sección
+        }
+    }
+    return client
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
