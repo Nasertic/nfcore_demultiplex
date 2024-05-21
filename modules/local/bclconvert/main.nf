@@ -29,41 +29,16 @@ process BCLCONVERT {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
-    def input_tar = run_dir.toString().endsWith(".tar.gz") ? true : false
-    def input_dir = input_tar ? run_dir.toString() - '.tar.gz' : run_dir
+    //def input_tar = run_dir.toString().endsWith(".tar.gz") ? true : false
+    //def input_dir = input_tar ? run_dir.toString() - '.tar.gz' : run_dir
     """
-    if [ ! -d ${input_dir} ]; then
-        mkdir -p ${input_dir}
-    fi
-
-    if ${input_tar}; then
-        ## Ensures --strip-components only applied when top level of tar contents is a directory
-        ## If just files or multiple directories, place all in $input_dir
-
-        if [[ \$(tar -taf ${run_dir} | grep -o -P "^.*?\\/" | uniq | wc -l) -eq 1 ]]; then
-            tar \\
-                -C $input_dir --strip-components 1 \\
-                -xavf \\
-                $args2 \\
-                $run_dir \\
-                $args3
-        else
-            tar \\
-                -C $input_dir \\
-                -xavf \\
-                $args2 \\
-                $run_dir \\
-                $args3
-        fi
-    fi
-
     bcl-convert \\
         $args \\
         --output-directory . \\
-        --bcl-input-directory ${input_dir} \\
+        --bcl-input-directory ${run_dir} \\
         --sample-sheet ${samplesheet}
 
-    cp -r ${input_dir}/InterOp ./
+    cp -r ${run_dir}/InterOp ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

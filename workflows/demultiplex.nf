@@ -57,7 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-// include { RSYNC                         } from '../modules/local/rsync/main'
+include { RSYNC                         } from '../modules/local/rsync/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
 include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
@@ -80,12 +80,8 @@ workflow DEMULTIPLEX {
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
-    taxlevel                = params.taxlevel                                           // list: [D,P,C,O,F,G,S,S1]
     save_output_fastqs      = params.save_output_fastqs                                 // boolean: true, false
     save_reads_assignment   = params.save_reads_assignment                              // boolean: true, false
-    ontreads                = params.ontreads                                           // boolean: true, false
-    readlen                 = params.readlen                                            // int
-    run_kraken2             = params.run_kraken2                                            // boolean: true, false
 
     // Channel inputs
     ch_input = file(params.input)
@@ -100,7 +96,6 @@ workflow DEMULTIPLEX {
     //      https://raw.githubusercontent.com/nf-core/test-datasets/demultiplex/samplesheet/1.3.0/sgdemux-samplesheet.csv
     if (demultiplexer == 'fqtk'){
         ch_inputs = extract_csv_fqtk(ch_input)
-
         ch_inputs.dump(tag: 'DEMULTIPLEX::inputs',{FormattingService.prettyFormat(it)})
 
         // Split flowcells into separate channels containg run as tar and run as path
@@ -140,7 +135,7 @@ workflow DEMULTIPLEX {
     // Except for bclconvert and bcl2fastq for wich we untar in the process
     // Re-join the metadata and the untarred run directory with the samplesheet
 
-    if (demultiplexer in ['bclconvert', 'bcl2fastq']) ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join(ch_flowcells_tar.run_dirs, failOnMismatch:true, failOnDuplicate:true)
+    if (demultiplexer in ['other']) ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join(ch_flowcells_tar.run_dirs, failOnMismatch:true, failOnDuplicate:true)
     else {
         ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( UNTAR ( ch_flowcells_tar.run_dirs ).untar, failOnMismatch:true, failOnDuplicate:true )
         ch_versions = ch_versions.mix(UNTAR.out.versions)
@@ -166,7 +161,7 @@ workflow DEMULTIPLEX {
         case ['bcl2fastq', 'bclconvert']:
             // SUBWORKFLOW: illumina
             // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
-            BCL_DEMULTIPLEX( ch_flowcells, demultiplexer )
+            BCL_DEMULTIPLEX(ch_flowcells, demultiplexer )
             ch_raw_fastq = ch_raw_fastq.mix( BCL_DEMULTIPLEX.out.fastq )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
@@ -256,7 +251,7 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: fastq_screen // kraken excluding
-    if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+    if (!("fastq_screen" in skip_tools && params.kraken_db == 'false')){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
