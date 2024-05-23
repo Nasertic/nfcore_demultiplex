@@ -35,7 +35,7 @@ process KRAKEN2_KRAKEN2 {
     def unclassified_option = save_output_fastqs ? "--unclassified-out ${unclassified}" : ""
     def readclassification_option = save_reads_assignment ? "--output ${prefix}.kraken2.classifiedreads.txt" : "--output /dev/null"
     def compress_reads_command = save_output_fastqs ? "pigz -p $task.cpus *.fastq" : ""
-    def rlength = params.ontreads ? 250 : params.readlen // and here ontreads matters. Default for -r is 100 in bracken, Dilthey used 1k in his paper
+    //def rlength = params.ontreads ? 250 : params.readlen // and here ontreads matters. Default for -r is 100 in bracken, Dilthey used 1k in his paper
     
     """
     kraken2 \\
