@@ -2,7 +2,8 @@ process BCL2FASTQ {
     tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
     debug true
-
+    stageInMode 'copy'
+    
     container "nf-core/bcl2fastq:2.20.0.422"
 
     input:

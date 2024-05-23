@@ -57,7 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-include { RSYNC                         } from '../modules/local/rsync/main'
+include { CP2SCRATCH                    } from '../modules/local/cp2scratch'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
 include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
@@ -135,10 +135,11 @@ workflow DEMULTIPLEX {
     // Except for bclconvert and bcl2fastq for wich we untar in the process
     // Re-join the metadata and the untarred run directory with the samplesheet
 
-    if (demultiplexer in ['other']) ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join(ch_flowcells_tar.run_dirs, failOnMismatch:true, failOnDuplicate:true)
-    else {
-        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( UNTAR ( ch_flowcells_tar.run_dirs ).untar, failOnMismatch:true, failOnDuplicate:true )
-        ch_versions = ch_versions.mix(UNTAR.out.versions)
+    if (demultiplexer in ['bclconvert', 'bcl2fastq'] )
+        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( CP2SCRATCH (ch_flowcells_tar.run_dirs).cp2scratch, failOnMismatch:true, failOnDuplicate:true)
+      //ch_versions = ch_versions.mix(CP2SCRATCH.out.versions)
+      else {
+        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( ch_flowcells_tar.run_dirs , failOnMismatch:true, failOnDuplicate:true )
     }
 
     // Merge the two channels back together
