@@ -95,7 +95,7 @@ nextflow run main.nf -profile test_dragen,singularity
 ## TODO
 ```bash
 nextflow run main.nf \
- --input /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/sgalera/nfcore_demultiplex/sample_sheet.csv \
+ --input ./assets/sample_sheet.csv \
  --outdir /data/scratch/LAB/temp_demultiplex/to_delete_whatever \
  -c hpc.conf
 ```

@@ -33,9 +33,9 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { BCL_DEMULTIPLEX           } from '../subworkflows/nf-core/bcl_demultiplex/main'
+include { BCL_DEMULTIPLEX           } from '../subworkflows/local/bcl_demultiplex/main'
 include { DRAGEN_DEMULTIPLEX        } from '../subworkflows/local/dragen_demultiplex/main'
-include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/nf-core/fastq_contam_seqtk_kraken/main'
+include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/local/fastq_contam_seqtk_kraken/main'
 include { BASES_DEMULTIPLEX         } from '../subworkflows/local/bases_demultiplex/main'
 include { FQTK_DEMULTIPLEX          } from '../subworkflows/local/fqtk_demultiplex/main'
 include { SINGULAR_DEMULTIPLEX      } from '../subworkflows/local/singular_demultiplex/main'
@@ -57,8 +57,10 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-// include { RSYNC                         } from '../modules/local/rsync/main'
+include { CP2SCRATCH                    } from '../modules/local/cp2scratch'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
+include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
+include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,6 +80,8 @@ workflow DEMULTIPLEX {
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
+    save_output_fastqs      = params.save_output_fastqs                                 // boolean: true, false
+    save_reads_assignment   = params.save_reads_assignment                              // boolean: true, false
 
     // Channel inputs
     ch_input = file(params.input)
@@ -92,7 +96,6 @@ workflow DEMULTIPLEX {
     //      https://raw.githubusercontent.com/nf-core/test-datasets/demultiplex/samplesheet/1.3.0/sgdemux-samplesheet.csv
     if (demultiplexer == 'fqtk'){
         ch_inputs = extract_csv_fqtk(ch_input)
-
         ch_inputs.dump(tag: 'DEMULTIPLEX::inputs',{FormattingService.prettyFormat(it)})
 
         // Split flowcells into separate channels containg run as tar and run as path
@@ -116,7 +119,7 @@ workflow DEMULTIPLEX {
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
         ch_flowcells = ch_inputs
             .branch { meta, samplesheet, run ->
-                tar: run.toString().endsWith('.tar.gz')
+                tar: run.toString().endsWith('.tar.gz') || run.toString().startsWith('/data/medper/LAB/')
                 dir: true
             }
 
@@ -127,15 +130,16 @@ workflow DEMULTIPLEX {
             }
     }
 
-    // MODULE: untar
-    // Runs when run_dir is a tar archive
-    // Except for bclconvert and bcl2fastq for wich we untar in the process
-    // Re-join the metadata and the untarred run directory with the samplesheet
+    // MODULE: CP2SCRATCH
+    // Runs when run_dir is in /data/medper/LAB/ directory
+    // Only for bclconvert and bcl2fastq
+    // Re-join the metadata and the copied run directory with the samplesheet
 
-    if (demultiplexer in ['bclconvert', 'bcl2fastq']) ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join(ch_flowcells_tar.run_dirs, failOnMismatch:true, failOnDuplicate:true)
+    if (demultiplexer in ['bclconvert', 'bcl2fastq'] )
+        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( CP2SCRATCH (ch_flowcells_tar.run_dirs).cp2scratch, failOnMismatch:true, failOnDuplicate:true)
+      //ch_versions = ch_versions.mix(CP2SCRATCH.out.versions)
     else {
-        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( UNTAR ( ch_flowcells_tar.run_dirs ).untar, failOnMismatch:true, failOnDuplicate:true )
-        ch_versions = ch_versions.mix(UNTAR.out.versions)
+        ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( ch_flowcells_tar.run_dirs , failOnMismatch:true, failOnDuplicate:true )
     }
 
     // Merge the two channels back together
@@ -158,12 +162,12 @@ workflow DEMULTIPLEX {
         case ['bcl2fastq', 'bclconvert']:
             // SUBWORKFLOW: illumina
             // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
-            // Runs when "demultiplexer" is set to "bclconvert", "bcl2fastq"
-            BCL_DEMULTIPLEX( ch_flowcells, demultiplexer )
+            BCL_DEMULTIPLEX(ch_flowcells, demultiplexer )
             ch_raw_fastq = ch_raw_fastq.mix( BCL_DEMULTIPLEX.out.fastq )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( BCL_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(BCL_DEMULTIPLEX.out.versions)
+            ch_output_folders = ch_output_folders.mix(BCL_DEMULTIPLEX.out.output_folder)
             break
 
         case 'dragen':
@@ -238,7 +242,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db){
+    if (kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
@@ -248,7 +252,7 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: fastq_screen // kraken excluding
-    if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+    if (!("fastq_screen" in skip_tools) && params.kraken == 'false'){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -282,6 +286,7 @@ workflow DEMULTIPLEX {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    // TODO test CI/CD
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)

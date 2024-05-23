@@ -21,20 +21,9 @@
                     "default": null,
                     "description": "Comma-separated list of tools to skip (fastp,falco,multiqc,kraken,fastq_screen)"
                 },
-                "sample_size": {
-                    "type": "integer",
-                    "default": 10000,
-                    "description": "Number of reads to subsample for contamination detection."
-                },
-                "kraken_db": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "default": null,
-                    "description": "path to Kraken2 DB to use for screening"
-                },
                 "fastq_screen_subset": {
                     "type": "integer",
-                    "default": 10000,
+                    "default": 1000000,
                     "description": "Number of reads to subsample for FastQ Screen."
                 },
                 "fastq_screen_config": {
@@ -42,11 +31,6 @@
                     "format": "file-path",
                     "default": "/data/scratch/LAB/references/FastQ_Screen_Genomes/fastq_screen.conf",
                     "description": "Path to FastQ Screen configuration file."
-                },
-                "no_split": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "TO BE REMOVED --> JUST FOR TESTING TOOL"
                 }
             }
         },
@@ -125,6 +109,42 @@
                 }
             }
         },
+        "taxonomy": {
+            "title": "Taxonomy",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "run_kraken2": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-toggle-on",
+                    "description": "Turn on profiling with Kraken2. "
+                },
+                "save_output_fastqs": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "Turn on saving of Kraken2-aligned reads",
+                    "help_text": "Save reads that do and do not have a taxonomic classification in your output results directory in FASTQ format.\n\n> Modifies tool parameter(s):\n> - kraken2: `--classified-out` and `--unclassified-out`"
+                },
+                "save_reads_assignment": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-save",
+                    "description": "Turn on saving of Kraken2 per-read taxonomic assignment file",
+                    "help_text": "Save a text file that contains a list of each read that had a taxonomic assignment, with information on specific taxonomic taxonomic assignment that that read recieved.\n\n> Modifies tool parameter(s):\n> - kraken2: `--output`"
+                },
+                "sample_size": {
+                    "type": "integer",
+                    "default": 10000,
+                    "description": "Number of reads to subsample for contamination detection."
+                },
+                "kraken_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": null,
+                    "description": "path to Kraken2 DB to use for screening"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -183,7 +203,7 @@
                 "max_cpus": {
                     "type": "integer",
                     "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
+                    "default": 20,
                     "fa_icon": "fas fa-microchip",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
@@ -191,7 +211,7 @@
                 "max_memory": {
                     "type": "string",
                     "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
+                    "default": "110.GB",
                     "fa_icon": "fas fa-memory",
                     "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
                     "hidden": true,
@@ -200,7 +220,7 @@
                 "max_time": {
                     "type": "string",
                     "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
+                    "default": "167.h",
                     "fa_icon": "far fa-clock",
                     "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
                     "hidden": true,
@@ -336,6 +356,9 @@
         },
         {
             "$ref": "#/definitions/demultiplex_options"
+        },
+        {
+            "$ref": "#/definitions/taxonomy"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
