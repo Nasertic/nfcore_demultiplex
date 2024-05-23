@@ -99,17 +99,6 @@
                         ]
                     }
                 }
-            },
-            "subworkflows": {
-                "nf-core": {
-                    "fastq_contam_seqtk_kraken": {
-                        "branch": "master",
-                        "git_sha": "dedc0e31087f3306101c38835d051bf49789445a",
-                        "installed_by": [
-                            "subworkflows"
-                        ]
-                    }
-                }
             }
         }
     }
