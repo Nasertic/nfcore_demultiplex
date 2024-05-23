@@ -23,7 +23,7 @@
                 },
                 "fastq_screen_subset": {
                     "type": "integer",
-                    "default": 10000,
+                    "default": 1000000,
                     "description": "Number of reads to subsample for FastQ Screen."
                 },
                 "fastq_screen_config": {
@@ -203,7 +203,7 @@
                 "max_cpus": {
                     "type": "integer",
                     "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
+                    "default": 20,
                     "fa_icon": "fas fa-microchip",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
@@ -211,7 +211,7 @@
                 "max_memory": {
                     "type": "string",
                     "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
+                    "default": "110.GB",
                     "fa_icon": "fas fa-memory",
                     "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
                     "hidden": true,
@@ -220,7 +220,7 @@
                 "max_time": {
                     "type": "string",
                     "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
+                    "default": "167.h",
                     "fa_icon": "far fa-clock",
                     "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
                     "hidden": true,
@@ -356,6 +356,9 @@
         },
         {
             "$ref": "#/definitions/demultiplex_options"
+        },
+        {
+            "$ref": "#/definitions/taxonomy"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
