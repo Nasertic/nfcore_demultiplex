@@ -282,7 +282,6 @@ workflow DEMULTIPLEX {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    // TODO test CI/CD
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)
