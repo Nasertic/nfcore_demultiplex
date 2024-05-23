@@ -119,7 +119,7 @@ workflow DEMULTIPLEX {
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
         ch_flowcells = ch_inputs
             .branch { meta, samplesheet, run ->
-                tar: run.toString().endsWith('.tar.gz')
+                tar: run.toString().endsWith('.tar.gz') || run.toString().startsWith('/data/medper/LAB/')
                 dir: true
             }
 
@@ -130,15 +130,15 @@ workflow DEMULTIPLEX {
             }
     }
 
-    // MODULE: untar
-    // Runs when run_dir is a tar archive
-    // Except for bclconvert and bcl2fastq for wich we untar in the process
-    // Re-join the metadata and the untarred run directory with the samplesheet
+    // MODULE: CP2SCRATCH
+    // Runs when run_dir is in /data/medper/LAB/ directory
+    // Only for bclconvert and bcl2fastq
+    // Re-join the metadata and the copied run directory with the samplesheet
 
     if (demultiplexer in ['bclconvert', 'bcl2fastq'] )
         ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( CP2SCRATCH (ch_flowcells_tar.run_dirs).cp2scratch, failOnMismatch:true, failOnDuplicate:true)
       //ch_versions = ch_versions.mix(CP2SCRATCH.out.versions)
-      else {
+    else {
         ch_flowcells_tar_merged = ch_flowcells_tar.samplesheets.join( ch_flowcells_tar.run_dirs , failOnMismatch:true, failOnDuplicate:true )
     }
 
@@ -252,7 +252,7 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: fastq_screen // kraken excluding
-    if (!("fastq_screen" in skip_tools && params.kraken_db == 'false')){
+    if (!("fastq_screen" in skip_tools) && params.kraken == 'false'){
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -286,6 +286,7 @@ workflow DEMULTIPLEX {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    // TODO test CI/CD
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)

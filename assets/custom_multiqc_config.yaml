@@ -4,5 +4,4 @@ report_header_info:
   - Contact E-mail: "secuenciacion@nasertic.es"
   - Application Type: "Nextflow Demultiplex: BCLconvert, fastp, Falco, Contamination"
   - Project Type: "Application"
-  - Sequencing Platform: echo "${flowcell}" | awk -F'/' '{print $5}'
   - Sequencing Platform: "NovaSeq6000"
