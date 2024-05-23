@@ -35,7 +35,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 include { BCL_DEMULTIPLEX           } from '../subworkflows/local/bcl_demultiplex/main'
 include { DRAGEN_DEMULTIPLEX        } from '../subworkflows/local/dragen_demultiplex/main'
-include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/nf-core/fastq_contam_seqtk_kraken/main'
+include { FASTQ_CONTAM_SEQTK_KRAKEN } from '../subworkflows/local/fastq_contam_seqtk_kraken/main'
 include { BASES_DEMULTIPLEX         } from '../subworkflows/local/bases_demultiplex/main'
 include { FQTK_DEMULTIPLEX          } from '../subworkflows/local/fqtk_demultiplex/main'
 include { SINGULAR_DEMULTIPLEX      } from '../subworkflows/local/singular_demultiplex/main'

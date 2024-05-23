@@ -45,7 +45,8 @@
                         "git_sha": "653218e79ffa76fde20319e9062f8b8da5cf7555",
                         "installed_by": [
                             "fastq_contam_seqtk_kraken"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/kraken2/kraken2/kraken2-kraken2.diff"
                     },
                     "krakentools/kreport2krona": {
                         "branch": "master",
@@ -73,7 +74,8 @@
                         "git_sha": "b7ebe95761cd389603f9cc0e0dc384c0f663815a",
                         "installed_by": [
                             "modules"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/multiqc/multiqc.diff"
                     },
                     "seqtk/sample": {
                         "branch": "master",
