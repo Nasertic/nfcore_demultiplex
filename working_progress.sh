@@ -45,14 +45,17 @@ module load singularity/3.4.1
 nextflow run main.nf -profile test_dragen,singularity -c hpc.conf --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results'
 nextflow run main.nf \
         -profile test_dragen,singularity \
-        -c hpc.conf --outdir 'tests/results' \
-        --skip_tools 'kraken'
+        -c hpc.conf --outdir 'tests/results/save_output_fastqs' \
+        --skip_tools 'fastq_screen' \
+        --save_output_fastqs \
+        --sample_size 1000 \
+        --demultiplexer 'bases2fastq'
 
 nextflow run main.nf \
         -profile test_dragen,singularity \
         -c hpc.conf --outdir './tests/results_bcl_iSeq' \
         --demultiplexer 'bclconvert' \
-        --skip_tools 'fastp,falco, fastq_screen, kraken'
+        --skip_tools 'fastp,falco,fastq_screen,kraken'
 
 nextflow run main.nf \
         -profile test_dragen,singularity \
@@ -116,13 +119,42 @@ nextflow run main.nf  \
 #     --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
 #    #-resume
 
-# Real data iSeq
+# Real data iSeq con dbkraken2 (8Gb)
 nextflow run main.nf  \
     -profile singularity \
-    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/sample_sheet.csv' \
-    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_bcl_iSeq' \
-    --demultiplexer 'bases2fastq' \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet.csv' \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_bcl2fastq_kraken' \
+    --demultiplexer 'bcl2fastq' \
     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf \
     --sample_size 1000 \
-    --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_20240112'
+    --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_8Gb_20240112' \
+    --skip_tools 'fastp,falco,fastq_screen,interop'
 #    #-resume
+
+
+nextflow run main.nf \
+    -profile singularity   \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet.csv'   \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_krona'  \
+    --demultiplexer 'bcl2fastq'     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf    \
+    --sample_size 1000     --kraken_db '/data/scratch/LAB/references/dbkraken2/k2_standard_16_20240112/' \
+    --skip_tools 'fastq_screen,interop' -resume --save_output_fastqs --save_reads_assignment --run_kraken2
+
+
+nextflow run main.nf \
+    -profile singularity   \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet.csv'   \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_sintar'  \
+    --demultiplexer 'bcl2fastq'     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf    \
+    --skip_tools 'fastp,falco,kraken,fastq_screen,interop'
+
+nextflow run main.nf \
+    -profile singularity   \
+    --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet2.csv'   \
+    --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_sintar'  \
+    --demultiplexer 'bcl2fastq'     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf    \
+    --skip_tools 'fastp,falco,kraken,fastq_screen,interop'
+
+nextflow run main.nf -profile singularity --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet2.csv'  --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_sintar_bcl2fastq_local'      --demultiplexer 'bcl2fastq'     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf  --skip_tools 'fastp,falco,kraken,fastq_screen,interop'
+
+nextflow run main.nf -profile singularity --input '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/assets/sample_sheet_NovaSeq.csv'  --outdir '/data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/tests/results_sintar_bcl2fastq_NovaSeq'      --demultiplexer 'bcl2fastq'     -c /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/mansego/nfcore_demultiplex/hpc.conf  --skip_tools 'fastp,falco,kraken,fastq_screen,interop'
