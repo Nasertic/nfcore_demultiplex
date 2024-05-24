@@ -238,7 +238,7 @@ workflow DEMULTIPLEX {
     MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
-    if (kraken_db){
+    if (kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
             [sample_size],  kraken_db
@@ -268,6 +268,7 @@ workflow DEMULTIPLEX {
         if ("fastq_screen" in skip_tools) {
             INTEROP( ch_output_folders, [] )
         } else {
+            ch_output_folders.view()
             INTEROP(
                 ch_output_folders,
                 FASTQ_SCREEN.out.fastq_screen_finished
