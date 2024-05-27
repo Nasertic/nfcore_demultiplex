@@ -18,15 +18,16 @@ process INTEROP{
 
     script:
     // Change to channel?
+    //cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
+    //cp $interop_folder/Reports/RunInfo.xml $interop_folder/InterOp
     """
-    cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
-    cp $interop_folder/Reports/RunInfo.xml $interop_folder
 
-    interop_index-summary $interop_folder --csv=1 > interop_index_summary_report.csv
+
+    interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        fastqscreen: \$(echo \$(interop_index-summary 2>&1) | sed 's/^.# Version: v//; s/ .*\$//')
+        illumina-interop: \$(echo \$(interop_index-summary 2>&1) | sed 's/^.# Version: v//; s/ .*\$//')
     END_VERSIONS
     """
 }

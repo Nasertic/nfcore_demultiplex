@@ -1,8 +1,8 @@
 process BCL2FASTQ {
     tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
-    debug true
-    
+    //debug true
+
 
     container "nf-core/bcl2fastq:2.20.0.422"
 
@@ -16,7 +16,7 @@ process BCL2FASTQ {
     tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")  , optional:true, emit: undetermined_idx
     tuple val(meta), path("Reports")                             , emit: reports
     tuple val(meta), path("Stats")                               , emit: stats
-    tuple val(meta), path("InterOp/*.bin")                       , emit: interop
+    tuple val(meta), path("InterOp/*.{bin,xml}")                 , emit: interop
     val(meta)                                                    , emit: demultiplex_folders
     path("versions.yml")                                         , emit: versions
 
@@ -43,7 +43,7 @@ process BCL2FASTQ {
         --processing-threads ${task.cpus}
 
     cp -r ${run_dir}/InterOp ./
-
+    cp -r ${run_dir}/RunInfo.xml ./InterOp/
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcl2fastq: \$(bcl2fastq -V 2>&1 | grep -m 1 bcl2fastq | sed 's/^.*bcl2fastq v//')

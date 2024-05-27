@@ -1,7 +1,7 @@
 process BCLCONVERT {
     tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
     label 'process_high'
-    debug true
+    //debug true
     container "nf-core/bclconvert:4.2.7"
 
     input:
@@ -14,7 +14,7 @@ process BCLCONVERT {
     tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")  , optional:true, emit: undetermined_idx
     tuple val(meta), path("Reports")                             , emit: reports
     tuple val(meta), path("Logs")                                , emit: logs
-    tuple val(meta), path("InterOp/*.bin")                       , emit: interop
+    tuple val(meta), path("InterOp/*.{bin,xml}")                 , emit: interop
     val(meta)                                                    , emit: demultiplex_folders
     path("versions.yml")                                         , emit: versions
 
@@ -39,6 +39,7 @@ process BCLCONVERT {
         --sample-sheet ${samplesheet}
 
     cp -r ${run_dir}/InterOp ./
+    cp -r ${run_dir}/RunInfo.xml ./InterOp/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
