@@ -1,6 +1,6 @@
-from sample_sheet import SampleSheet
+import os
 
-file = "smallest_run_SampleSheet.csv"
+from sample_sheet import SampleSheet
 
 check_mark = '\u2713'
 GREEN   = '\033[92m'
@@ -133,4 +133,18 @@ def check_samplesheet(file: str):
         raise ValueError(e)
 
 
-check_samplesheet(file)
+if __name__ == "__main__":
+    sample_sheet_file = ""
+    for files in os.listdir():
+        if files == "samplesheet_check.py":
+            continue
+
+        if files.endswith(".csv") and sample_sheet_file != "":
+            error_print("Hay más de un archivo .csv en el directorio")
+            exit()
+
+        if files.endswith(".csv") and sample_sheet_file == "":
+            sample_sheet_file = files
+
+
+    check_samplesheet(sample_sheet_file)
