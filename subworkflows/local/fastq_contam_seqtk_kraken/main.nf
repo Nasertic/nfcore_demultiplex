@@ -3,8 +3,10 @@
 //
 // FASTQ_CONTAM_SEQTK_KRAKEN: Subsample FASTQs and perform contamination screening
 //
-include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../../modules/nf-core/kraken2/kraken2/main'
-include { SEQTK_SAMPLE               } from '../../../modules/nf-core/seqtk/sample/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2                     } from '../../../modules/nf-core/kraken2/kraken2/main'
+include { SEQTK_SAMPLE                                   } from '../../../modules/nf-core/seqtk/sample/main'
+include { KRAKENTOOLS_KREPORT2KRONA } from '../../../modules/nf-core/krakentools/kreport2krona/main.nf'
+include { KRONA_KTIMPORTTEXT } from '../../../modules/nf-core/krona/ktimporttext/main'
 
 workflow FASTQ_CONTAM_SEQTK_KRAKEN {
 
@@ -15,7 +17,9 @@ workflow FASTQ_CONTAM_SEQTK_KRAKEN {
 
     main:
         ch_reports  = Channel.empty()
+        ch_krona    = Channel.empty()
         ch_versions = Channel.empty()
+
 
         // Combine all combinations of reads with sample_size(s).
         // Note using more than 1 sample_size can cause file collisions
@@ -34,13 +38,26 @@ workflow FASTQ_CONTAM_SEQTK_KRAKEN {
 
         KRAKEN2(SEQTK_SAMPLE.out.reads,
                 kraken2_db,
-                false,
-                false
+                params.save_output_fastqs,
+                params.save_reads_assignment
         )
         ch_versions = ch_versions.mix(KRAKEN2.out.versions.first())
         ch_reports  = ch_reports.mix(KRAKEN2.out.report)
 
+        KRAKENTOOLS_KREPORT2KRONA(KRAKEN2.out.report
+        )
+        ch_krona  = ch_krona.mix(KRAKENTOOLS_KREPORT2KRONA.out.txt)
+        ch_versions = ch_versions.mix(KRAKENTOOLS_KREPORT2KRONA.out.versions)
+
+        KRONA_KTIMPORTTEXT(ch_krona
+        )
+        krona_html = ch_krona.mix(KRONA_KTIMPORTTEXT.out.html)
+        ch_versions = ch_versions.mix(KRONA_KTIMPORTTEXT.out.versions)
+        KRONA_KTIMPORTTEXT.out.html.set { krona_report }
+
+
     emit:
         reports  = ch_reports     // channel: [ [meta], log  ]
+        krona_html    = krona_html       // channel: [ krona.html ]
         versions = ch_versions    // channel: [ versions.yml ]
 }

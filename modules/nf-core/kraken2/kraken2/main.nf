@@ -1,11 +1,12 @@
 process KRAKEN2_KRAKEN2 {
     tag "$meta.id"
     label 'kraken2'
+    debug true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-5799ab18b5fc681e75923b2450abaa969907ec98:87fc08d11968d081f3e8a37131c1f1f6715b6542-0' :
-        'biocontainers/mulled-v2-5799ab18b5fc681e75923b2450abaa969907ec98:87fc08d11968d081f3e8a37131c1f1f6715b6542-0' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-8706a1dd73c6cc426e12dd4dd33a5e917b3989ae:c8cbdc8ff4101e6745f8ede6eb5261ef98bdaff4-0' :
+        'biocontainers/mulled-v2-8706a1dd73c6cc426e12dd4dd33a5e917b3989ae:c8cbdc8ff4101e6745f8ede6eb5261ef98bdaff4-0' }"
 
     input:
     tuple val(meta), path(reads)
@@ -18,6 +19,7 @@ process KRAKEN2_KRAKEN2 {
     tuple val(meta), path('*.unclassified{.,_}*')   , optional:true, emit: unclassified_reads_fastq
     tuple val(meta), path('*classifiedreads.txt')   , optional:true, emit: classified_reads_assignment
     tuple val(meta), path('*report.txt')                           , emit: report
+    tuple val(meta), path('*kraken2.krona')                        , emit: krona
     path "versions.yml"                                            , emit: versions
 
     when:
@@ -33,7 +35,8 @@ process KRAKEN2_KRAKEN2 {
     def unclassified_option = save_output_fastqs ? "--unclassified-out ${unclassified}" : ""
     def readclassification_option = save_reads_assignment ? "--output ${prefix}.kraken2.classifiedreads.txt" : "--output /dev/null"
     def compress_reads_command = save_output_fastqs ? "pigz -p $task.cpus *.fastq" : ""
-
+    //def rlength = params.ontreads ? 250 : params.readlen // and here ontreads matters. Default for -r is 100 in bracken, Dilthey used 1k in his paper
+    
     """
     kraken2 \\
         --db $db \\
@@ -48,9 +51,37 @@ process KRAKEN2_KRAKEN2 {
         $args \\
         $reads
 
+    cut -f 2,3 ${prefix}.kraken2.report.txt > ${prefix}_kraken2.krona
+
     $compress_reads_command
 
  
+    touch ${prefix}.kraken2.report.txt
+    if [ "$save_output_fastqs" == "true" ]; then
+        touch $classified
+        touch $unclassified
+    fi
+    if [ "$save_reads_assignment" == "true" ]; then
+        touch ${prefix}.kraken2.classifiedreads.txt
+    fi
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        kraken2: \$(echo \$(kraken2 --version 2>&1) | sed 's/^.*Kraken version //; s/ .*\$//')
+        pigz: \$( pigz --version 2>&1 | sed 's/pigz //g' )
+    END_VERSIONS
+    """
+
+    stub:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def paired       = meta.single_end ? "" : "--paired"
+    def classified   = meta.single_end ? "${prefix}.classified.fastq.gz"   : "${prefix}.classified_1.fastq.gz ${prefix}.classified_2.fastq.gz"
+    def unclassified = meta.single_end ? "${prefix}.unclassified.fastq.gz" : "${prefix}.unclassified_1.fastq.gz ${prefix}.unclassified_2.fastq.gz"
+    def readclassification_option = save_reads_assignment ? "--output ${prefix}.kraken2.classifiedreads.txt" : "--output /dev/null"
+    def compress_reads_command = save_output_fastqs ? "pigz -p $task.cpus *.fastq" : ""
+
+    """
     touch ${prefix}.kraken2.report.txt
     if [ "$save_output_fastqs" == "true" ]; then
         touch $classified

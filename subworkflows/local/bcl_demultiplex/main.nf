@@ -4,8 +4,8 @@
 // Demultiplex Illumina BCL data using bcl-convert or bcl2fastq or dragen
 //
 
-include { BCLCONVERT               } from "../../../modules/nf-core/bclconvert/main"
-include { BCL2FASTQ                } from "../../../modules/nf-core/bcl2fastq/main"
+include { BCLCONVERT               } from "../../../modules/local/bclconvert/main"
+include { BCL2FASTQ                } from "../../../modules/local/bcl2fastq/main"
 
 workflow BCL_DEMULTIPLEX {
     take:
@@ -13,11 +13,12 @@ workflow BCL_DEMULTIPLEX {
         demultiplexer   // bclconvert or bcl2fastq or dragen
 
     main:
-        ch_versions = Channel.empty()
-        ch_fastq    = Channel.empty()
-        ch_reports  = Channel.empty()
-        ch_stats    = Channel.empty()
-        ch_interop  = Channel.empty()
+        ch_versions             = Channel.empty()
+        ch_fastq                = Channel.empty()
+        ch_reports              = Channel.empty()
+        ch_stats                = Channel.empty()
+        ch_interop              = Channel.empty()
+        ch_demultiplex_folders  = Channel.empty()
 
         // Split flowcells into separate channels containg run as tar and run as path
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
@@ -44,32 +45,35 @@ workflow BCL_DEMULTIPLEX {
         // Demultiplex the bcl files
         if (demultiplexer == "bclconvert") {
             BCLCONVERT( ch_flowcells )
-            ch_fastq    = ch_fastq.mix(BCLCONVERT.out.fastq)
-            ch_interop  = ch_interop.mix(BCLCONVERT.out.interop)
-            ch_reports  = ch_reports.mix(BCLCONVERT.out.reports)
-            ch_versions = ch_versions.mix(BCLCONVERT.out.versions)
+            ch_fastq                = ch_fastq.mix(BCLCONVERT.out.fastq)
+            ch_interop              = ch_interop.mix(BCLCONVERT.out.interop)
+            ch_reports              = ch_reports.mix(BCLCONVERT.out.reports)
+            ch_demultiplex_folders  = ch_demultiplex_folders.mix(BCLCONVERT.out.demultiplex_folders)
+            ch_versions             = ch_versions.mix(BCLCONVERT.out.versions)
         }
 
         // MODULE: bcl2fastq
         // Demultiplex the bcl files
         if (demultiplexer == "bcl2fastq") {
             BCL2FASTQ( ch_flowcells )
-            ch_fastq    = ch_fastq.mix(BCL2FASTQ.out.fastq)
-            ch_interop  = ch_interop.mix(BCL2FASTQ.out.interop)
-            ch_reports  = ch_reports.mix(BCL2FASTQ.out.reports)
-            ch_stats    = ch_stats.mix(BCL2FASTQ.out.stats)
-            ch_versions = ch_versions.mix(BCL2FASTQ.out.versions)
+            ch_fastq                = ch_fastq.mix(BCL2FASTQ.out.fastq)
+            ch_interop              = ch_interop.mix(BCL2FASTQ.out.interop)
+            ch_reports              = ch_reports.mix(BCL2FASTQ.out.reports)
+            ch_stats                = ch_stats.mix(BCL2FASTQ.out.stats)
+            ch_demultiplex_folders  = ch_demultiplex_folders.mix(BCL2FASTQ.out.demultiplex_folders)
+            ch_versions             = ch_versions.mix(BCL2FASTQ.out.versions)
         }
 
         // Generate meta for each fastq
         ch_fastq_with_meta = generate_fastq_meta(ch_fastq)
 
     emit:
-        fastq    = ch_fastq_with_meta
-        reports  = ch_reports
-        stats    = ch_stats
-        interop  = ch_interop
-        versions = ch_versions
+        fastq           = ch_fastq_with_meta
+        reports         = ch_reports
+        stats           = ch_stats
+        interop         = ch_interop
+        output_folder   = ch_demultiplex_folders
+        versions        = ch_versions
 }
 
 /*
