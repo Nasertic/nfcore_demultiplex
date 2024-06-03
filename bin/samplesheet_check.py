@@ -1,6 +1,9 @@
 import os
 
+from colorama import init
 from sample_sheet import SampleSheet
+
+init()
 
 check_mark = '\u2713'
 GREEN   = '\033[92m'
