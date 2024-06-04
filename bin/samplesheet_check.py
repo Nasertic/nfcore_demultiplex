@@ -47,7 +47,7 @@ def check_header(header: SampleSheet) -> bool:
         return False
 
     for header_field, header_value in header.items():
-        if header_value == "":
+        if header_value == "" or header_value == " ":
             warning_print(f'El campo "{header_field}" está vacío')
 
     success_section("Header")
@@ -68,6 +68,10 @@ def check_settings(settings: SampleSheet) -> bool:
         return False
 
     for settings_field, settings_value in settings.items():
+        print(settings_field)
+        if settings_field == "AdapterRead1" or settings_field == "AdapterRead2":
+            if not correct_index(settings_value):
+                raise ValueError("ACTG error") #TODO
         if settings_value == "":
             warning_print(f'El campo "{settings_field}" está vacío')
 
@@ -164,3 +168,9 @@ if __name__ == "__main__":
             sample_sheet_file = file
 
     check_samplesheet(f"{parent_dir}/{sample_sheet_file}")
+
+
+## TODO UMIs, Index different length, index bigger length warning, characters Ns..
+## Check other csv formats -> LF, CRLF, UTF-...
+## Accents and ñs ç ü
+## Same index on different samples
