@@ -170,6 +170,8 @@ if __name__ == "__main__":
     check_samplesheet(f"{parent_dir}/{sample_sheet_file}")
 
 
+
+
 ## TODO UMIs, Index different length, index bigger length warning, characters Ns..
 ## Check other csv formats -> LF, CRLF, UTF-...
 ## Accents and ñs ç ü
