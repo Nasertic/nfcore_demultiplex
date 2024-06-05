@@ -132,7 +132,7 @@
                     "description": "Turn on saving of Kraken2 per-read taxonomic assignment file",
                     "help_text": "Save a text file that contains a list of each read that had a taxonomic assignment, with information on specific taxonomic taxonomic assignment that that read recieved.\n\n> Modifies tool parameter(s):\n> - kraken2: `--output`"
                 },
-                "sample_size": {
+                "kraken_sample_size": {
                     "type": "integer",
                     "default": 10000,
                     "description": "Number of reads to subsample for contamination detection."
