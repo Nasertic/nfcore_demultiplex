@@ -1,12 +1,12 @@
 process CP2SCRATCH {
-    debug true //Debugging
+    // debug true //Debugging
     tag "$meta.id"
-    label 'local'
     executor 'local'
+    label 'process_medium'
 
     input:
     tuple val(meta), path(flow_cell)
-    
+
     output:
     tuple val(meta), path("$prefix"), emit: cp2scratch //untar
     path "versions.yml"             , emit: versions
