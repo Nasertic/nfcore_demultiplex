@@ -9,12 +9,19 @@ process CSV2TSV {
 
     output:
     tuple val(meta), path('samplesheet.tsv'), val(fastq_readstructure_pairs), emit: ch_output
+    path "versions.yml"                                                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
+    def version = '4.2.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+
     """
     sed 's/,/\t/g' ${sample_sheet} > samplesheet.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        sed: $version
+    END_VERSIONS
     """
-}
