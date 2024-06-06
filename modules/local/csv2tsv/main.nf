@@ -25,3 +25,4 @@ process CSV2TSV {
         sed: $version
     END_VERSIONS
     """
+}
