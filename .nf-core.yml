@@ -9,4 +9,3 @@ lint:
     - lib/Utils.groovy
     - lib/WorkflowMain.groovy
     - lib/WorkflowDemultiplex.groovy
-
