@@ -10,7 +10,7 @@ on:
 jobs:
   run-tower:
     name: Run AWS tests
-    if: github.repository == 'nfcore_demultiplex'
+    if: github.repository == 'Nasertic/nfcore_demultiplex'
     runs-on: ubuntu-latest
     steps:
       # Launch workflow using Tower CLI tool action
