@@ -5,12 +5,12 @@ name: nf-core AWS test
 on:
   push:
     branches:
-      -dev
+      -sgalera
   workflow_dispatch:
 jobs:
   run-tower:
     name: Run AWS tests
-    if: github.repository == 'nf-core/demultiplex'
+    if: github.repository == 'nfcore_demultiplex'
     runs-on: ubuntu-latest
     steps:
       # Launch workflow using Tower CLI tool action
