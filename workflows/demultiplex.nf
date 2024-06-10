@@ -253,6 +253,7 @@ workflow DEMULTIPLEX {
 
     // MODULE: fastq_screen // kraken excluding
     if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+        ch_fastq_to_qc.view()
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
