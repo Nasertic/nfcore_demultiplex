@@ -1,0 +1,40 @@
+name: "interop"
+description: Plot interop stats from Illumina sequencing runs
+keywords:
+  - demultiplex
+  - illumina
+  - interop
+tools:
+  - "interop_index-summary":
+      description: "Summarize index metrics from InterOp files"
+      homepage: "https://illumina.github.io/interop/index.html"
+      documentation: "https://illumina.github.io/interop/index.html"
+      licence: ["ILLUMINA"]
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [[ id:'test', multiqc_commentary:'Correct run', client:'whoever', lane:all ], /path/to/demultiplex_folder]
+  - interop_folder:
+      type: folder
+      description: "Interop folder of the sequencing run"
+      pattern: "/path/to/interop_folder"
+  - finished_processes:
+      type: boolean
+      description: |
+        true or false whether or not the demultiplexing process has finished
+output:
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - interop_index_summary_report:
+      type: file
+      description: Interop index summary report
+      pattern: "*index_summary*.csv"
+
+authors:
+  - "@sgaleraalq"
+maintainers:
+  - "@sgaleraalq"

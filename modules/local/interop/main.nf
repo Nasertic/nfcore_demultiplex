@@ -21,8 +21,6 @@ process INTEROP{
     //cp $interop_folder/Reports/IndexMetricsOut.bin $interop_folder/InterOp
     //cp $interop_folder/Reports/RunInfo.xml $interop_folder/InterOp
     """
-
-
     interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml

@@ -63,8 +63,8 @@ output:
       description: Interop files
       pattern: "*.{bin}"
 authors:
-  - "@sgalera"
+  - "@sgaleraalq"
   - "@mansego"
 maintainers:
-  - "@sgalera"
+  - "@sgaleraalq"
   - "@mansego"
