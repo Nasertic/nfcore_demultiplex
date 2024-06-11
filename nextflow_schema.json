@@ -134,7 +134,7 @@
                 },
                 "kraken_sample_size": {
                     "type": "integer",
-                    "default": 10000,
+                    "default": 1000,
                     "description": "Number of reads to subsample for contamination detection."
                 },
                 "kraken_db": {

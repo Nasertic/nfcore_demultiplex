@@ -76,7 +76,7 @@ workflow DEMULTIPLEX {
     demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
     trim_fastq              = params.trim_fastq                                         // boolean: true, false
     skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
-    sample_size             = params.kraken_sample_size                                        // int
+    sample_size             = params.kraken_sample_size                                 // int
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
@@ -252,7 +252,7 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: fastq_screen // kraken excluding
-    if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+    if (!("fastq_screen" in skip_tools)){
         ch_fastq_to_qc.view()
         FASTQ_SCREEN(
             ch_fastq_to_qc,
