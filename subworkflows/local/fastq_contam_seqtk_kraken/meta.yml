@@ -17,7 +17,7 @@ input:
   - reads:
       type: file
       description: List of input FastQ files of size 1 and 2 for single-end and paired-end data, respectively
-  - sample_size:
+  - kraken_sample_size:
       type: string
       description: Number of reads to subsample for contamination detection.
 output:

@@ -82,7 +82,8 @@
                         "git_sha": "7f88aae93c69586c0789322b77743ee0ef469502",
                         "installed_by": [
                             "fastq_contam_seqtk_kraken"
-                        ]
+                        ],
+                        "patch": "modules/nf-core/seqtk/sample/seqtk-sample.diff"
                     },
                     "sgdemux": {
                         "branch": "master",

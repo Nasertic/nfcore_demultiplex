@@ -76,7 +76,7 @@ workflow DEMULTIPLEX {
     demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
     trim_fastq              = params.trim_fastq                                         // boolean: true, false
     skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
-    sample_size             = params.sample_size                                        // int
+    kraken_sample_size      = params.kraken_sample_size                                        // int
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
@@ -245,7 +245,7 @@ workflow DEMULTIPLEX {
     if (kraken_db && !("kraken" in skip_tools)){
         FASTQ_CONTAM_SEQTK_KRAKEN(
             ch_fastq_to_qc,
-            [sample_size],  kraken_db
+            [kraken_sample_size],  kraken_db
         )
         ch_versions = ch_versions.mix(FASTQ_CONTAM_SEQTK_KRAKEN.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_CONTAM_SEQTK_KRAKEN.out.reports.map { meta, log -> return log })

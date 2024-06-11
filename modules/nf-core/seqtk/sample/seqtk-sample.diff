@@ -1,0 +1,243 @@
+Changes in module 'nf-core/seqtk/sample'
+--- modules/nf-core/seqtk/sample/main.nf
++++ modules/nf-core/seqtk/sample/main.nf
+@@ -8,7 +8,7 @@
+         'biocontainers/seqtk:1.4--he4a0461_1' }"
+ 
+     input:
+-    tuple val(meta), path(reads), val(sample_size)
++    tuple val(meta), path(reads), val(kraken_sample_size)
+ 
+     output:
+     tuple val(meta), path("*.fastq.gz"), emit: reads
+@@ -23,8 +23,8 @@
+     if (!(args ==~ /.*-s[0-9]+.*/)) {
+         args += " -s100"
+     }
+-    if ( !sample_size ) {
+-        error "SEQTK/SAMPLE must have a sample_size value included"
++    if ( !kraken_sample_size ) {
++        error "SEQTK/SAMPLE must have a kraken_sample_size value included"
+     }
+     """
+     printf "%s\\n" $reads | while read f;
+@@ -33,7 +33,7 @@
+             sample \\
+             $args \\
+             \$f \\
+-            $sample_size \\
++            $kraken_sample_size \\
+             | gzip --no-name > ${prefix}_\$(basename \$f)
+     done
+ 
+
+--- modules/nf-core/seqtk/sample/meta.yml
++++ modules/nf-core/seqtk/sample/meta.yml
+@@ -21,7 +21,7 @@
+       type: file
+       description: List of input FastQ files
+       pattern: "*.{fastq.gz}"
+-  - sample_size:
++  - kraken_sample_size:
+       type: integer
+       description: Number of reads to sample.
+ output:
+
+--- modules/nf-core/seqtk/sample/tests/main.nf.test
++++ /dev/null
+@@ -1,80 +0,0 @@
+-nextflow_process {
+-
+-    name "Test Process SEQTK_SAMPLE"
+-    script "modules/nf-core/seqtk/sample/main.nf"
+-    process "SEQTK_SAMPLE"
+-    config "./standard.config"
+-
+-    tag "modules"
+-    tag "modules_nfcore"
+-    tag "seqtk"
+-    tag "seqtk/sample"
+-
+-    test("sarscov2_sample_singleend_fqgz") {
+-
+-        when {
+-            process {
+-                """
+-                input[0] =  [
+-                                [ id:'test', single_end:true ],
+-                                file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true),
+-                                50
+-                            ]
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll (
+-                { assert process.success },
+-                { assert snapshot(process.out).match() }
+-            )
+-        }
+-    }
+-
+-    test("sarscov2_sample_pairedend_fqgz") {
+-
+-        when {
+-            process {
+-                """
+-                input[0] =  [
+-                                [ id:'test', single_end:true ],
+-                                file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true),
+-                                50
+-                            ]
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll (
+-                { assert process.success },
+-                { assert snapshot(process.out).match() }
+-            )
+-        }
+-    }
+-
+-    test("sarscov2_sample_singlend_fqgz_stub") {
+-        options "-stub"
+-
+-        when {
+-            process {
+-                """
+-                input[0] =  [
+-                                [ id:'test', single_end:true ],
+-                                file(params.test_data['sarscov2']['illumina']['test_1_fastq_gz'], checkIfExists: true),
+-                                50
+-                            ]
+-                """
+-            }
+-        }
+-
+-        then {
+-            assertAll (
+-                { assert process.success },
+-                { assert snapshot(process.out).match() }
+-            )
+-        }
+-    }
+-
+-}
+
+--- modules/nf-core/seqtk/sample/tests/main.nf.test.snap
++++ /dev/null
+@@ -1,95 +0,0 @@
+-{
+-    "sarscov2_sample_singlend_fqgz_stub": {
+-        "content": [
+-            {
+-                "0": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+-                    ]
+-                ],
+-                "1": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ],
+-                "reads": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+-                    ]
+-                ],
+-                "versions": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ]
+-            }
+-        ],
+-        "timestamp": "2024-02-22T15:58:45.902956"
+-    },
+-    "sarscov2_sample_pairedend_fqgz": {
+-        "content": [
+-            {
+-                "0": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled_test_1.fastq.gz:md5,e5f44fafd7351c5abb9925a075132941"
+-                    ]
+-                ],
+-                "1": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ],
+-                "reads": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled_test_1.fastq.gz:md5,e5f44fafd7351c5abb9925a075132941"
+-                    ]
+-                ],
+-                "versions": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ]
+-            }
+-        ],
+-        "timestamp": "2024-02-22T15:58:37.679954"
+-    },
+-    "sarscov2_sample_singleend_fqgz": {
+-        "content": [
+-            {
+-                "0": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled_test_1.fastq.gz:md5,e5f44fafd7351c5abb9925a075132941"
+-                    ]
+-                ],
+-                "1": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ],
+-                "reads": [
+-                    [
+-                        {
+-                            "id": "test",
+-                            "single_end": true
+-                        },
+-                        "test.sampled_test_1.fastq.gz:md5,e5f44fafd7351c5abb9925a075132941"
+-                    ]
+-                ],
+-                "versions": [
+-                    "versions.yml:md5,0529f2d163df9e2cd2ae8254dfb63806"
+-                ]
+-            }
+-        ],
+-        "timestamp": "2024-02-22T15:58:29.474491"
+-    }
+-}
+--- modules/nf-core/seqtk/sample/tests/standard.config
++++ /dev/null
+@@ -1,6 +0,0 @@
+-process {
+-    withName: SEQTK_SAMPLE {
+-        ext.args = '-s100'
+-        ext.prefix = { "${meta.id}.sampled" }
+-    }
+-}
+--- modules/nf-core/seqtk/sample/tests/tags.yml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-seqtk/sample:
+-  - "modules/nf-core/seqtk/sample/**"
+
+************************************************************

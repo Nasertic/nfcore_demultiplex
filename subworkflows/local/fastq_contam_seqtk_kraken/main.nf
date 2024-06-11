@@ -12,7 +12,7 @@ workflow FASTQ_CONTAM_SEQTK_KRAKEN {
 
     take:
         ch_reads    //channel: [mandatory] meta,reads
-        sample_size //string:  [mandatory] number of reads to subsample
+        kraken_sample_size //string:  [mandatory] number of reads to subsample
         kraken2_db  //string:  [mandatory] path to Kraken2 DB to use for screening
 
     main:
@@ -21,11 +21,11 @@ workflow FASTQ_CONTAM_SEQTK_KRAKEN {
         ch_versions = Channel.empty()
 
 
-        // Combine all combinations of reads with sample_size(s).
-        // Note using more than 1 sample_size can cause file collisions
+        // Combine all combinations of reads with kraken_sample_size(s).
+        // Note using more than 1 kraken_sample_size can cause file collisions
         // We add n_reads to meta to avoid collisions
         ch_reads
-            .combine(sample_size)
+            .combine(kraken_sample_size)
             .map{ it ->
                 def meta2 = it[0] + [n_reads: it[2]]
                 [ meta2, it[1], it[2] ]
