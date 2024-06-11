@@ -4,7 +4,7 @@
 // FASTQ_CONTAM_SEQTK_KRAKEN: Subsample FASTQs and perform contamination screening
 //
 include { KRAKEN2_KRAKEN2 as KRAKEN2                     } from '../../../modules/nf-core/kraken2/kraken2/main'
-include { SEQTK_SAMPLE                                   } from '../../../modules/nf-core/seqtk/sample/main'
+include { SEQTK_SAMPLE                                   } from '../../../modules/local/seqtk/sample/main'
 include { KRAKENTOOLS_KREPORT2KRONA } from '../../../modules/nf-core/krakentools/kreport2krona/main.nf'
 include { KRONA_KTIMPORTTEXT } from '../../../modules/nf-core/krona/ktimporttext/main'
 
