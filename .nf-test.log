@@ -1,0 +1,5 @@
+Jun-11 15:05:19.514 [main] INFO  com.askimed.nf.test.App - nf-test 0.8.4
+Jun-11 15:05:19.535 [main] INFO  com.askimed.nf.test.App - Arguments: [test, modules/local/interop/]
+Jun-11 15:05:20.625 [main] INFO  com.askimed.nf.test.App - Nextflow Version: 23.10.1
+Jun-11 15:05:20.628 [main] INFO  com.askimed.nf.test.commands.RunTestsCommand - Load config from file /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/sgalera/nfcore_demultiplex/nf-test.config...
+Jun-11 15:05:21.101 [main] ERROR com.askimed.nf.test.commands.RunTestsCommand - No tests ot directories found containing test files.

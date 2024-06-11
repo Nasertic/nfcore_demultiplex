@@ -222,12 +222,12 @@ workflow DEMULTIPLEX {
 
     // MODULE: fastp
     if (!("fastp" in skip_tools)){
-            FASTP(ch_raw_fastq, [], [], [])
-            ch_multiqc_files = ch_multiqc_files.mix( FASTP.out.json.map { meta, json -> return json} )
-            ch_versions = ch_versions.mix(FASTP.out.versions)
-            if (trim_fastq) {
-                ch_fastq_to_qc = FASTP.out.reads
-            }
+        FASTP(ch_raw_fastq, [], [], [])
+        ch_multiqc_files = ch_multiqc_files.mix( FASTP.out.json.map { meta, json -> return json} )
+        ch_versions = ch_versions.mix(FASTP.out.versions)
+        if (trim_fastq) {
+            ch_fastq_to_qc = FASTP.out.reads
+        }
     }
 
     // MODULE: falco, drop in replacement for fastqc
@@ -273,7 +273,6 @@ workflow DEMULTIPLEX {
         if ("fastq_screen" in skip_tools) {
             INTEROP( ch_output_folders, [] )
         } else {
-            ch_output_folders.view()
             INTEROP(
                 ch_output_folders,
                 FASTQ_SCREEN.out.fastq_screen_finished
