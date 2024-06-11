@@ -4,3 +4,8 @@ lint:
   files_unchanged:
     - .github/ISSUE_TEMPLATE/bug_report.yml
     - .github/workflows/linting.yml
+  files_exist:
+    - lib/NfcoreTemplate.groovy
+    - lib/Utils.groovy
+    - lib/WorkflowMain.groovy
+    - lib/WorkflowDemultiplex.groovy

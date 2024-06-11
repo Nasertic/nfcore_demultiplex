@@ -57,7 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-include { CP2SCRATCH                    } from '../modules/local/cp2scratch'
+include { CP2SCRATCH                    } from '../modules/local/cp2scratch/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
 include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
@@ -253,6 +253,7 @@ workflow DEMULTIPLEX {
 
     // MODULE: fastq_screen // kraken excluding
     if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+        ch_fastq_to_qc.view()
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -272,6 +273,7 @@ workflow DEMULTIPLEX {
         if ("fastq_screen" in skip_tools) {
             INTEROP( ch_output_folders, [] )
         } else {
+            ch_output_folders.view()
             INTEROP(
                 ch_output_folders,
                 FASTQ_SCREEN.out.fastq_screen_finished
@@ -286,7 +288,7 @@ workflow DEMULTIPLEX {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    // TODO test CI/CD
+
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)
