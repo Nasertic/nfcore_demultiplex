@@ -88,6 +88,7 @@ workflow DEMULTIPLEX {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
     ch_output_folders = Channel.empty()
+    ch_demultiplex_finished = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -176,7 +177,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
+            ch_demultiplex_finished = DRAGEN_DEMULTIPLEX.out.done // Verify that DRAGEN has finished
             break
 
         case 'fqtk':
@@ -239,7 +240,7 @@ workflow DEMULTIPLEX {
 
     // MODULE: md5sum
     // Split file list into separate channels entries and generate a checksum for each
-    MD5SUM(ch_fastq_to_qc.transpose())
+    // MD5SUM(ch_fastq_to_qc.transpose())
 
     // SUBWORKFLOW: FASTQ_CONTAM_SEQTK_KRAKEN
     if (kraken_db && !("kraken" in skip_tools)){
@@ -264,23 +265,32 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: illumina-interop
-    if (!("interop" in skip_tools)){
-        ch_output_folders = ch_output_folders.map{ it ->
-            def folderPath = it.lane == "all" ? params.outdir : "${params.outdir}/${it.id}"
-            return [it, folderPath]
-        }
-        // Check if "fastq_screen" is skipped
-        if ("fastq_screen" in skip_tools) {
-            INTEROP( ch_output_folders, [] )
-        } else {
-            INTEROP(
-                ch_output_folders,
-                FASTQ_SCREEN.out.fastq_screen_finished
-            )
-        }
-        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
-        ch_versions = ch_versions.mix(INTEROP.out.versions)
+    if (!("interop" in skip_tools)) {
+        INTEROP(
+            ch_demultiplex_finished
+        )
     }
+
+
+    // if (!("interop" in skip_tools)){
+    //     // ch_output_folders = ch_output_folders.map{ it ->
+    //     //     def folderPath = it.lane == "all" ? params.outdir : "${params.outdir}/${it.id}"
+    //     //     return [it, folderPath]
+    //     // }
+
+
+    //     // Check if "fastq_screen" is skipped
+    //     if ("fastq_screen" in skip_tools) {
+    //         INTEROP( ch_output_folders, [] )
+    //     } else {
+    //         INTEROP(
+    //             ch_output_folders,
+    //             FASTQ_SCREEN.out.fastq_screen_finished
+    //         )
+    //     }
+    //     ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
+    //     ch_versions = ch_versions.mix(INTEROP.out.versions)
+    // }
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (

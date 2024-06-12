@@ -49,6 +49,7 @@ workflow DRAGEN_DEMULTIPLEX {
         ch_stats                    = ch_stats.mix(DRAGEN_DEMULTIPLEXER.out.stats)
         ch_demultiplex_folders      = ch_demultiplex_folders.mix(DRAGEN_DEMULTIPLEXER.out.demultiplex_folders)
         ch_versions                 = ch_versions.mix(DRAGEN_DEMULTIPLEXER.out.versions)
+        ch_done                     = DRAGEN_DEMULTIPLEXER.out.done
 
 
         // Generate meta for each fastq
@@ -61,6 +62,7 @@ workflow DRAGEN_DEMULTIPLEX {
         interop         = ch_interop
         output_folder   = ch_demultiplex_folders
         versions        = ch_versions
+        done            = ch_done
 }
 
 /*
