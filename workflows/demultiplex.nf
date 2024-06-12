@@ -88,7 +88,7 @@ workflow DEMULTIPLEX {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
     ch_output_folders = Channel.empty()
-    ch_demultiplex_finished = Channel.empty()
+    ch_interop_folder = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -177,7 +177,8 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_finished = DRAGEN_DEMULTIPLEX.out.done // Verify that DRAGEN has finished
+            ch_interop_folder = DRAGEN_DEMULTIPLEX.out.interop_folder // Verify that DRAGEN has finished
+            // ch_interop_metrics = DRAGEN_DEMULTIPLEX.out.interop_metrics
             break
 
         case 'fqtk':
@@ -264,10 +265,11 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
     }
 
-    // MODULE: illumina-interop
-    if (!("interop" in skip_tools)) {
+    // MODULE: illumina-interop if dragen is selected
+    if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
         INTEROP(
-            ch_demultiplex_finished
+            ch_interop_folder
+            // ch_interop_metrics
         )
     }
 

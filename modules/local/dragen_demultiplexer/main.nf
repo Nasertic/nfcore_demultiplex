@@ -16,7 +16,8 @@ process DRAGEN_DEMULTIPLEXER {
     tuple val(meta), path("Reports")                                , emit: reports
     tuple val(meta), path("InterOp/*.{bin,xml}")                    , emit: interop
     val(meta)                                                       , emit: demultiplex_folders
-    val(true)                                                       , emit: done
+    path("InterOp")                                                 , emit: interop_folder
+    // path("InterOp/Reports/IndexMetricsOut.bin")                     , emit: interop_metrics
     path("versions.yml")                                            , emit: versions
 
     when:
