@@ -88,6 +88,7 @@ workflow DEMULTIPLEX {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
     ch_output_folders = Channel.empty()
+    ch_interop        = Channel.empty()
     ch_interop_folder = Channel.empty()
 
     // Sanitize inputs and separate input types
@@ -177,6 +178,7 @@ workflow DEMULTIPLEX {
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
             ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            ch_interop = DRAGEN_DEMULTIPLEX.out.interop.filter{ it == "RunInfo.xml" }
             ch_interop_folder = DRAGEN_DEMULTIPLEX.out.interop_folder // Verify that DRAGEN has finished
             // ch_interop_metrics = DRAGEN_DEMULTIPLEX.out.interop_metrics
             break
@@ -268,8 +270,8 @@ workflow DEMULTIPLEX {
     // MODULE: illumina-interop if dragen is selected
     if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
         INTEROP(
-            ch_interop_folder
-            // ch_interop_metrics
+            ch_interop_folder,
+            ch_interop
         )
     }
 
