@@ -84,12 +84,12 @@ workflow DEMULTIPLEX {
     save_reads_assignment   = params.save_reads_assignment                              // boolean: true, false
 
     // Channel inputs
-    ch_input = file(params.input)
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
-    ch_output_folders = Channel.empty()
-    ch_interop        = Channel.empty()
-    ch_interop_folder = Channel.empty()
+    ch_input                = file(params.input)
+    ch_versions             = Channel.empty()
+    ch_multiqc_files        = Channel.empty()
+    ch_output_folders       = Channel.empty()
+    ch_interop_folder       = Channel.empty()
+    ch_interop_run_info     = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -174,13 +174,12 @@ workflow DEMULTIPLEX {
 
         case 'dragen':
             DRAGEN_DEMULTIPLEX( ch_flowcells, demultiplexer )
-            ch_raw_fastq = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
-            ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_interop = DRAGEN_DEMULTIPLEX.out.interop.filter{ it == "RunInfo.xml" }
-            ch_interop_folder = DRAGEN_DEMULTIPLEX.out.interop_folder // Verify that DRAGEN has finished
-            // ch_interop_metrics = DRAGEN_DEMULTIPLEX.out.interop_metrics
+            ch_raw_fastq            = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
+            ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
+            ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
+            ch_versions             = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
+            ch_interop_folder       = ch_interop_folder.mix(DRAGEN_DEMULTIPLEX.out.interop_folder)
+            ch_interop_run_info     = ch_interop_run_info.mix(DRAGEN_DEMULTIPLEX.out.interop_run_info)
             break
 
         case 'fqtk':
@@ -271,7 +270,7 @@ workflow DEMULTIPLEX {
     if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
         INTEROP(
             ch_interop_folder,
-            ch_interop
+            ch_interop_run_info
         )
     }
 

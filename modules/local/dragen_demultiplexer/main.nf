@@ -15,10 +15,8 @@ process DRAGEN_DEMULTIPLEXER {
     tuple val(meta), path("Reports")                                , emit: reports
     tuple val(meta), path("Stats")                                  , emit: stats
     tuple val(meta), path("Logs")                                   , emit: logs
-    tuple val(meta), path("InterOp/*.{bin,xml}")                    , emit: interop
-    val(meta)                                                       , emit: demultiplex_folders
-    path("InterOp")                                                 , emit: interop_folder
-    // path("InterOp/Reports/IndexMetricsOut.bin")                     , emit: interop_metrics
+    tuple val(meta), path("InterOp/")                               , emit: interop_folder
+    path("RunInfo.xml")                                             , emit: interop_run_info
     path("versions.yml")                                            , emit: versions
 
     when:
@@ -42,10 +40,12 @@ process DRAGEN_DEMULTIPLEXER {
         --output-directory ./ --force \
         --sample-sheet $samplesheet
 
-    mkdir Stats/
+    mkdir Stats
+    mkdir InterOp
     cp -r Reports/legacy/Stats/* Stats/
     cp -r \$dragen_input_directory/InterOp ./
-    cp -r \$dragen_input_directory/RunInfo.xml ./InterOp/
+    cp Reports/IndexMetricsOut.bin InterOp/
+    cp \$dragen_input_directory/RunInfo.xml ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

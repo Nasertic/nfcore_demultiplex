@@ -11,7 +11,7 @@ process INTEROP{
 
     input:
     path(interop_folder)
-    tuple val(meta), path(interop_metrics)
+    path(interop_run_info)
 
     output:
     tuple val(meta), path("*index_summary*.csv")                , emit: "interop_index_summary_report"
@@ -19,11 +19,13 @@ process INTEROP{
 
     script:
     // Change to channel?
+    // cp $interop_folder/IndexMetricsOut.bin $interop_folder/InterOp
+    // cp $interop_folder/RunInfo.xml $interop_folder/InterOp
+    // interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
+
     """
     echo $interop_metrics
-    cp $interop_folder/IndexMetricsOut.bin $interop_folder/InterOp
-    cp $interop_folder/RunInfo.xml $interop_folder/InterOp
-    interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
+    echo $interop_run_info
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
