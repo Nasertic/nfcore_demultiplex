@@ -16,8 +16,7 @@ workflow DRAGEN_DEMULTIPLEX {
         ch_fastq                = Channel.empty()
         ch_reports              = Channel.empty()
         ch_stats                = Channel.empty()
-        ch_interop_folder       = Channel.empty()
-        ch_interop_run_info     = Channel.empty()
+        ch_demultiplex_folder   = Channel.empty()
 
         // Split flowcells into separate channels containg run as tar and run as path
         // https://nextflow.slack.com/archives/C02T98A23U7/p1650963988498929
@@ -47,8 +46,7 @@ workflow DRAGEN_DEMULTIPLEX {
         ch_reports                  = ch_reports.mix(DRAGEN_DEMULTIPLEXER.out.reports)
         ch_stats                    = ch_stats.mix(DRAGEN_DEMULTIPLEXER.out.stats)
         ch_versions                 = ch_versions.mix(DRAGEN_DEMULTIPLEXER.out.versions)
-        ch_interop_folder           = ch_interop_folder.mix(DRAGEN_DEMULTIPLEXER.out.interop_folder)
-        ch_interop_run_info         = ch_interop_run_info.mix(DRAGEN_DEMULTIPLEXER.out.interop_run_info)
+        ch_demultiplex_folder       = ch_demultiplex_folder.mix(DRAGEN_DEMULTIPLEXER.out.demultiplex_folder)
 
 
         // Generate meta for each fastq
@@ -59,8 +57,7 @@ workflow DRAGEN_DEMULTIPLEX {
         reports             = ch_reports
         stats               = ch_stats
         versions            = ch_versions
-        interop_folder      = ch_interop_folder
-        interop_run_info    = ch_interop_run_info
+        demultiplex_folder  = ch_demultiplex_folder
 }
 
 /*
