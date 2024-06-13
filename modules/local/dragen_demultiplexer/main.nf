@@ -12,8 +12,8 @@ process DRAGEN_DEMULTIPLEXER {
     tuple val(meta), path("**_S[1-9]*_I?_00?.fastq.gz")             , optional:true, emit: fastq_idx
     tuple val(meta), path("**Undetermined_S0*_R?_00?.fastq.gz")     , optional:true, emit: undetermined
     tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")     , optional:true, emit: undetermined_idx
-    tuple val(meta), path("Reports/legacy/Stats")                   , emit: stats
     tuple val(meta), path("Reports")                                , emit: reports
+    tuple val(meta), path("Reports/legacy/Stats")                   , emit: stats
     tuple val(meta), path("Logs")                                   , emit: logs
     tuple val(meta), path("InterOp/*.{bin,xml}")                    , emit: interop
     val(meta)                                                       , emit: demultiplex_folders
