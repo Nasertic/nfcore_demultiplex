@@ -23,7 +23,7 @@ process INTEROP{
     // interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
 
     """
-    echo $interop_folder
+    interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
