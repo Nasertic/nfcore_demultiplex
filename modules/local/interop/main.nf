@@ -10,20 +10,15 @@ process INTEROP{
         'biocontainers/illumina-interop:1.3.1--hdbdd923_0'}"
 
     input:
-    tuple val(meta), path(interop_folder)
+    tuple val(meta), path(demultiplex_stats_folder)
 
     output:
     tuple val(meta), path("*index_summary*.csv")                , emit: "interop_index_summary_report"
     path "versions.yml"                                         , emit: versions
 
     script:
-    // Change to channel?
-    // cp $interop_folder/IndexMetricsOut.bin $interop_folder/InterOp
-    // cp $interop_folder/RunInfo.xml $interop_folder/InterOp
-    // interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
-
     """
-    interop_index-summary $interop_folder/InterOp --csv=1 > interop_index_summary_report.csv
+    interop_index-summary $demultiplex_stats_folder/.. --csv=1 > interop_index_summary_report.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -176,8 +176,8 @@ workflow DEMULTIPLEX {
             ch_raw_fastq            = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
             ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
             ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
+            ch_demultiplex_folder   = DRAGEN_DEMULTIPLEX.out.stats
             ch_versions             = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_demultiplex_folder   = ch_demultiplex_folder.mix(DRAGEN_DEMULTIPLEX.out.demultiplex_folder)
             break
 
         case 'fqtk':
@@ -268,7 +268,7 @@ workflow DEMULTIPLEX {
     // MODULE: illumina-interop if dragen is selected
     if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
         INTEROP(
-            ch_demultiplex_folder
+            DRAGEN_DEMULTIPLEX.out.stats
         )
     }
 
