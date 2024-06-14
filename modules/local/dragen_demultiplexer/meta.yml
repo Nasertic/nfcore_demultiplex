@@ -1,0 +1,70 @@
+name: "dragen"
+description: Demultiplex Illumina BCL files with DRAGEN server
+keywords:
+  - demultiplex
+  - illumina
+  - fastq
+tools:
+  - "dragen_demultiplexer":
+      description: "Demultiplex Illumina BCL files with DRAGEN server"
+      homepage: "https://jp.support.illumina.com/content/dam/illumina-support/help/Illumina_DRAGEN_Bio_IT_Platform_v3_7_1000000141465/Content/SW/Informatics/Dragen/ToolsiBCL_fDG.htm"
+      documentation: "https://dragen-docs-public.s3.amazonaws.com/DRAGEN+User+Guide+v3.4.5.pdf"
+      licence: ["ILLUMINA"]
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - samplesheet:
+      type: file
+      description: "Input samplesheet"
+      pattern: "*.{csv}"
+  - run_dir:
+      type: file
+      description: |
+        Input run directory containing RunInfo.xml and BCL data
+        Could be a directory or a tar of the directory
+output:
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - fastq:
+      type: file
+      description: Demultiplexed sample FASTQ files
+      pattern: "**_S*_L00?_R?_00?.fastq.gz"
+  - fastq_idx:
+      type: file
+      description: Optional demultiplexed index FASTQ files
+      pattern: "**_S*_L00?_I?_00?.fastq.gz"
+  - undetermined:
+      type: file
+      description: Optional undetermined sample FASTQ files
+      pattern: "Undetermined_S0_L00?_R?_00?.fastq.gz"
+  - undetermined_idx:
+      type: file
+      description: Optional undetermined index FASTQ files
+      pattern: "Undetermined_S0_L00?_I?_00?.fastq.gz"
+  - reports:
+      type: file
+      description: Demultiplexing Reports
+      pattern: "Reports/*"
+  -interop:
+      type: file
+      description: Interop files of the run
+      pattern: "Interop/*.{bin,xml}"
+  - stats:
+      type: file
+      description: Statistics files
+      pattern: "Stats/*"
+  - interop:
+      type: file
+      description: Interop files
+      pattern: "*.{bin}"
+authors:
+  - "@sgaleraalq"
+  - "@mansego"
+maintainers:
+  - "@sgaleraalq"
+  - "@mansego"

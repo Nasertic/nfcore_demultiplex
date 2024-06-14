@@ -57,7 +57,7 @@ include { FASTQ_SCREEN                  } from '../modules/local/fastq_screen/ma
 include { INTEROP                       } from '../modules/local/interop/main'
 include { MULTIQC                       } from '../modules/nf-core/multiqc/main'
 include { UNTAR                         } from '../modules/nf-core/untar/main'
-include { CP2SCRATCH                    } from '../modules/local/cp2scratch'
+include { CP2SCRATCH                    } from '../modules/local/cp2scratch/main'
 include { MD5SUM                        } from '../modules/nf-core/md5sum/main'
 include { KRAKENTOOLS_KREPORT2KRONA     } from '../modules/nf-core/krakentools/kreport2krona/main'
 include { KRONA_KTIMPORTTEXT            } from '../modules/nf-core/krona/ktimporttext/main'
@@ -76,7 +76,7 @@ workflow DEMULTIPLEX {
     demultiplexer           = params.demultiplexer                                      // string: bases2fastq, bcl2fastq, bclconvert, fqtk, sgdemux, dragen
     trim_fastq              = params.trim_fastq                                         // boolean: true, false
     skip_tools              = params.skip_tools ? params.skip_tools.split(',') : []     // list: [falco, fastp, multiqc]
-    sample_size             = params.sample_size                                        // int
+    sample_size             = params.kraken_sample_size                                 // int
     kraken_db               = params.kraken_db                                          // path
     fastq_screen_config     = params.fastq_screen_config                                // path
     fastq_screen_subset     = params.fastq_screen_subset                                // int
@@ -84,10 +84,11 @@ workflow DEMULTIPLEX {
     save_reads_assignment   = params.save_reads_assignment                              // boolean: true, false
 
     // Channel inputs
-    ch_input = file(params.input)
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
-    ch_output_folders = Channel.empty()
+    ch_input                = file(params.input)
+    ch_versions             = Channel.empty()
+    ch_multiqc_files        = Channel.empty()
+    ch_output_folders       = Channel.empty()
+    ch_demultiplex_folder   = Channel.empty()
 
     // Sanitize inputs and separate input types
     // FQTK's input contains an extra column 'per_flowcell_manifest' so it is handled seperately
@@ -172,11 +173,11 @@ workflow DEMULTIPLEX {
 
         case 'dragen':
             DRAGEN_DEMULTIPLEX( ch_flowcells, demultiplexer )
-            ch_raw_fastq = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
-            ch_multiqc_files = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
-            ch_versions = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
-            ch_output_folders = ch_output_folders.mix(DRAGEN_DEMULTIPLEX.out.output_folder)
+            ch_raw_fastq            = ch_raw_fastq.mix( DRAGEN_DEMULTIPLEX.out.fastq )
+            ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.reports.map { meta, report -> return report} )
+            ch_multiqc_files        = ch_multiqc_files.mix( DRAGEN_DEMULTIPLEX.out.stats.map   { meta, stats  -> return stats } )
+            ch_demultiplex_folder   = DRAGEN_DEMULTIPLEX.out.stats
+            ch_versions             = ch_versions.mix(DRAGEN_DEMULTIPLEX.out.versions)
             break
 
         case 'fqtk':
@@ -222,12 +223,12 @@ workflow DEMULTIPLEX {
 
     // MODULE: fastp
     if (!("fastp" in skip_tools)){
-            FASTP(ch_raw_fastq, [], [], [])
-            ch_multiqc_files = ch_multiqc_files.mix( FASTP.out.json.map { meta, json -> return json} )
-            ch_versions = ch_versions.mix(FASTP.out.versions)
-            if (trim_fastq) {
-                ch_fastq_to_qc = FASTP.out.reads
-            }
+        FASTP(ch_raw_fastq, [], [], [])
+        ch_multiqc_files = ch_multiqc_files.mix( FASTP.out.json.map { meta, json -> return json} )
+        ch_versions = ch_versions.mix(FASTP.out.versions)
+        if (trim_fastq) {
+            ch_fastq_to_qc = FASTP.out.reads
+        }
     }
 
     // MODULE: falco, drop in replacement for fastqc
@@ -252,7 +253,8 @@ workflow DEMULTIPLEX {
     }
 
     // MODULE: fastq_screen // kraken excluding
-    if (!("fastq_screen" in skip_tools && params.kraken == 'false')){
+    if (!("fastq_screen" in skip_tools)){
+        ch_fastq_to_qc.view()
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -262,32 +264,21 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
     }
 
-    // MODULE: illumina-interop
-    if (!("interop" in skip_tools)){
-        ch_output_folders = ch_output_folders.map{ it ->
-            def folderPath = it.lane == "all" ? params.outdir : "${params.outdir}/${it.id}"
-            return [it, folderPath]
-        }
-        // Check if "fastq_screen" is skipped
-        if ("fastq_screen" in skip_tools) {
-            INTEROP( ch_output_folders, [] )
-        } else {
-            ch_output_folders.view()
-            INTEROP(
-                ch_output_folders,
-                FASTQ_SCREEN.out.fastq_screen_finished
-            )
-        }
-        ch_multiqc_files = ch_multiqc_files.mix( INTEROP.out.interop_index_summary_report.map { meta, interop -> return interop} )
-        ch_versions = ch_versions.mix(INTEROP.out.versions)
+    ch_demultiplex_folder.view()
+    // MODULE: illumina-interop if dragen is selected
+    if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
+        INTEROP(
+            DRAGEN_DEMULTIPLEX.out.stats
+        )
     }
+
 
     // DUMP SOFTWARE VERSIONS
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    // TODO test CI/CD
+
     // MODULE: MultiQC
     if (!("multiqc" in skip_tools)){
         workflow_summary    = WorkflowDemultiplex.paramsSummaryMultiqc(workflow, summary_params)

@@ -1,0 +1,59 @@
+name: "fastq_screen"
+description: Assess different organisms in a set of FASTQ files
+keywords:
+  - screening
+  - illumina
+  - fastq_screen
+tools:
+  - fastq_screen:
+      description: |
+        Screen a library of sequences in FastQ format against a set of sequence databases so you can see if the composition of the library matches with what you expect
+      documentation: https://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/
+      doi: 10.12688/f1000research.15931.2
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', samplename:XXX, readgroup:[ID:XXX, PU:XXX, PL:XXX, SM:XXX], fcid:XXX, lane:XXX, single_end:false ], [ /path/to/XXX_1.fastq.gz, /path/to/XXX_2.fastq.gz ]]
+  - reads:
+      type: file
+      description: "FASTQ files"
+      pattern: "*.{fastq,fastq.gz}"
+  - config:
+      type: file
+      description: "Input config file"
+      pattern: "*.{conf}"
+  - fastq_screen_subset:
+      type: int
+      description: |
+        Number of reads to use for the fastq_screen analysis. If not specified, all reads will be used.
+        e.g. 1000000
+output:
+    tuple val(meta), path('*screen.png')        , emit: fastq_screen_image
+    val true                                    , emit: fastq_screen_finished
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - fastq_screen_html_report:
+      type: file
+      description: HTML report
+      pattern: "*screen.html"
+  - fastq_screen_txt_report:
+      type: file
+      description: TXT report
+      pattern: "*screen.txt"
+  - fastq_screen_image:
+      type: file
+      description: PNG image
+      pattern: "*screen.png"
+  - fastq_screen_finished:
+      type: boolean
+      description: Fastq_screen finished
+authors:
+  - "@sgaleraalq"
+  - "@mansego"
+maintainers:
+  - "@sgaleraalq"
+  - "@mansego"

@@ -1,5 +1,5 @@
 process DRAGEN_DEMULTIPLEXER {
-    tag {"${meta.lane == 'all' ? meta.id + '.' + meta.lane : meta.id}" }
+    tag {"${meta.lane == 'all' ? meta.id : meta.id + ' -> lane: ' + meta.lane }" }
     label 'dragen'
     queue 'dragen'
     // debug true
@@ -12,10 +12,11 @@ process DRAGEN_DEMULTIPLEXER {
     tuple val(meta), path("**_S[1-9]*_I?_00?.fastq.gz")             , optional:true, emit: fastq_idx
     tuple val(meta), path("**Undetermined_S0*_R?_00?.fastq.gz")     , optional:true, emit: undetermined
     tuple val(meta), path("**Undetermined_S0*_I?_00?.fastq.gz")     , optional:true, emit: undetermined_idx
-    tuple val(meta), path("Reports/legacy/Stats")                   , emit: stats
-    tuple val(meta), path("Reports")                                , emit: reports
-    tuple val(meta), path("InterOp/*.{bin,xml}")                          , emit: interop
-    val(meta)                                                       , emit: demultiplex_folders
+    tuple val(meta), path("Reports/")                               , emit: reports
+    tuple val(meta), path("Stats/")                                 , emit: stats
+    path("Logs/")                                                   , emit: logs
+    path("InterOp/")                                                , emit: interop_folder
+    path("RunInfo.xml")                                             , emit: interop_run_info
     path("versions.yml")                                            , emit: versions
 
     when:
@@ -39,8 +40,12 @@ process DRAGEN_DEMULTIPLEXER {
         --output-directory ./ --force \
         --sample-sheet $samplesheet
 
+    mkdir Stats
+    mkdir InterOp
+    cp -r Reports/legacy/Stats/* Stats/
     cp -r \$dragen_input_directory/InterOp ./
-    cp -r \$dragen_input_directory/RunInfo.xml ./InterOp/
+    cp Reports/IndexMetricsOut.bin InterOp/
+    cp \$dragen_input_directory/RunInfo.xml ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
