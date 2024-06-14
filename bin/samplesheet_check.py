@@ -20,6 +20,9 @@ def warning_print(msg: str):
 def error_print(msg: str):
     print(f"\n{RED}ERROR:\n\nSample sheet contains the following error: {msg}\n\n{RESET}")
 
+def header_error_print():
+    print(f"\n{RED}ERROR:{RESET}\n\nHeader for [Data] section is not allowed to have empty fields.\n\n\nYou have something like the following example:\n")
+    print(f"{GREEN}[Data]\nSample_ID, Index_ID, Index, Index2, Sample_Project,{RED} EMTPY FIELD, EMPTY FIELD...\n\n{RESET}")
 
 def success_section(section: str):
     print(f"\n{GREEN}{check_mark}\t[{section}]{RESET}")
@@ -150,6 +153,9 @@ def check_samplesheet(file: str):
             print(f"\n{GREEN}La sample sheet está bien!\n\n{RESET}")
 
     except ValueError as e:
+        if "Header for [Data] section is not allowed to have empty fields" in str(e):
+            header_error_print()
+            return
         raise ValueError(e)
 
 
