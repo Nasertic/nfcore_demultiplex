@@ -205,6 +205,5 @@ if __name__ == "__main__":
 
 ## TODO UMIs, Index different length, index bigger length warning, characters Ns..
 ## Check other csv formats -> LF, CRLF, UTF-...
-## Accents and ñs ç ü
 ## Same index on different samples
 ## CHECK INDEX ID with index
