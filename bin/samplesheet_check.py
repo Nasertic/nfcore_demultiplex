@@ -12,6 +12,13 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 RESET = "\033[0m"
 
+translation_table = {
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+    'ü': 'u', 'Ü': 'U',
+    'ñ': 'n', 'Ñ': 'N', 'ç': 'c', 'Ç': 'C'
+}
+
 
 def warning_print(msg: str):
     print(f"\n{YELLOW}WARNING: {msg}{RESET}")
@@ -158,6 +165,22 @@ def check_samplesheet(file: str):
             return
         raise ValueError(e)
 
+def convert_to_correct_characters(line: str) -> str:
+    new_line = []
+    for char in line:
+        new_line.append(translation_table.get(char, char))
+
+    return ''.join(new_line).replace(";", ",")
+
+def change_invalid_characters(file: str):
+    new_file = []
+    with open(file) as f:
+        for line in f:
+            new_line = convert_to_correct_characters(line)
+            new_file.append(new_line)
+
+    with open(file, "w") as f:
+        f.writelines(new_file)
 
 if __name__ == "__main__":
     sample_sheet_file = ""
@@ -173,6 +196,7 @@ if __name__ == "__main__":
         if file.endswith(".csv") and sample_sheet_file == "":
             sample_sheet_file = file
 
+    change_invalid_characters(f"{parent_dir}/{sample_sheet_file}")
     check_samplesheet(f"{parent_dir}/{sample_sheet_file}")
 
 
