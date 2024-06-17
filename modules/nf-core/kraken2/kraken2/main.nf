@@ -1,7 +1,6 @@
 process KRAKEN2_KRAKEN2 {
     tag "$meta.id"
     label 'kraken2'
-    debug true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -44,6 +43,7 @@ process KRAKEN2_KRAKEN2 {
         --threads $task.cpus \\
         --report ${prefix}.kraken2.report.txt \\
         --gzip-compressed \\
+        --quick \\
         $unclassified_option \\
         $classified_option \\
         $readclassification_option \\
@@ -55,7 +55,6 @@ process KRAKEN2_KRAKEN2 {
 
     $compress_reads_command
 
- 
     touch ${prefix}.kraken2.report.txt
     if [ "$save_output_fastqs" == "true" ]; then
         touch $classified
