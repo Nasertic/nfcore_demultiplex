@@ -254,7 +254,6 @@ workflow DEMULTIPLEX {
 
     // MODULE: fastq_screen // kraken excluding
     if (!("fastq_screen" in skip_tools)){
-        ch_fastq_to_qc.view()
         FASTQ_SCREEN(
             ch_fastq_to_qc,
             fastq_screen_config,
@@ -264,7 +263,6 @@ workflow DEMULTIPLEX {
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
     }
 
-    ch_demultiplex_folder.view()
     // MODULE: illumina-interop if dragen is selected
     if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
         INTEROP(
