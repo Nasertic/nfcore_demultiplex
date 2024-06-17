@@ -21,8 +21,6 @@ translation_table = {
 }
 
 
-
-
 def warning_print(msg: str):
     print(f"\n{YELLOW}WARNING: {msg}{RESET}")
 
