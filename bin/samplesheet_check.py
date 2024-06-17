@@ -40,28 +40,28 @@ def success_section(section: str):
 
 def check_header(header: SampleSheet) -> bool:
     if header == []:
-        error_print("La sección de [Header] no está presente")
+        error_print("Section [Header] is not present")
         return False
 
     if "Date" not in header:
-        error_print('El campo "Date" no está presente')
+        error_print('"Date" field is not present')
         return False
 
     if "Investigator Name" not in header:
-        error_print('El campo "Investigator Name" no está presente')
+        error_print('"Investigator Name" field is not present')
         return False
 
     if "Experiment Name" not in header:
-        error_print('El campo "Experiment Name" no está presente')
+        error_print('"Experiment Name" field is not present')
         return False
 
     if "Description" not in header:
-        error_print('El campo "Description" no está presente')
+        error_print('"Description" field is not present')
         return False
 
     for header_field, header_value in header.items():
         if header_value == "" or header_value == " ":
-            warning_print(f'El campo "{header_field}" está vacío')
+            warning_print(f'"{header_field}" field is empty')
 
     success_section("Header")
     return True
@@ -69,15 +69,15 @@ def check_header(header: SampleSheet) -> bool:
 
 def check_settings(settings: SampleSheet) -> bool:
     if settings == []:
-        error_print("La sección de [Settings] no está presente")
+        error_print("Section [Settings] is not present")
         return False
 
     if "AdapterRead1" not in settings:
-        error_print('El campo "AdapterRead1" no está presente')
+        error_print('"AdapterRead1" field is not present')
         return False
 
     if "AdapterRead2" not in settings:
-        error_print('El campo "AdapterRead2" no está presente')
+        error_print('"AdapterRead2" is not present')
         return False
 
     for settings_field, settings_value in settings.items():
@@ -86,7 +86,7 @@ def check_settings(settings: SampleSheet) -> bool:
             if not correct_index(settings_value):
                 raise ValueError("ACTG error") #TODO
         if settings_value == "":
-            warning_print(f'El campo "{settings_field}" está vacío')
+            warning_print(f'"{settings_field}" field is empty')
 
     success_section("Settings")
     return True
@@ -94,14 +94,14 @@ def check_settings(settings: SampleSheet) -> bool:
 
 def check_reads(reads: SampleSheet) -> bool:
     if reads == []:
-        warning_print("La sección de [Reads] no está presente")
+        warning_print("Section [Reads] is not present")
         return True
 
     if len(reads) < 2:
-        warning_print("El run es single-end?")
+        warning_print("Is the run single-ended?")
 
     if len(reads) > 2:
-        error_print("Mas de dos campos en la sección de [Reads]")
+        error_print("More than 2 fields in section [Reads]")
         return False
 
     success_section("Reads")
@@ -115,12 +115,12 @@ def check_data(data: SampleSheet) -> bool:
         index2 = getattr(sample, "index2")
 
         if not correct_name(sample_id):
-            error_print(f'El nombre de la muestra "{sample_id}" contiene caracteres no permitidos')
+            error_print(f'Name of sample: "{sample_id}" contains not allowed characters')
             return False
 
         if not correct_index2(index1, index2):
             error_print(
-                f'El índice 2 ("{index2}") de la muestra "{sample_id}" no tiene el mismo tamaño que su índice 1 ("{index1}")'
+                f'Index 2 ("{index2}") of sample "{sample_id}" is not the same size as index1 ("{index1}")'
             )
             return False
 
@@ -160,7 +160,7 @@ def check_samplesheet(file: str):
             return
 
         else:
-            print(f"\n{GREEN}La sample sheet está bien!\n\n{RESET}")
+            print(f"\n{GREEN} Sample sheet is OK!\n\n{RESET}")
 
     except ValueError as e:
         if "Header for [Data] section is not allowed to have empty fields" in str(e):
@@ -193,7 +193,7 @@ if __name__ == "__main__":
             continue
 
         if file.endswith(".csv") and sample_sheet_file != "":
-            error_print("Hay más de un archivo .csv en el directorio")
+            error_print("More than one .csv file in directory")
             exit()
 
         if file.endswith(".csv") and sample_sheet_file == "":
