@@ -79,10 +79,11 @@ def check_settings(settings: SampleSheet) -> bool:
         return False
 
     for settings_field, settings_value in settings.items():
-        print(settings_field)
         if settings_field == "AdapterRead1" or settings_field == "AdapterRead2":
             if not correct_index(settings_value):
-                raise ValueError("ACTG error") #TODO
+                error_print(f'"{settings_field}" field contains not allowed characters')
+                return
+
         if settings_value == "":
             warning_print(f'"{settings_field}" field is empty')
 
@@ -199,8 +200,6 @@ if __name__ == "__main__":
 
     change_invalid_characters(f"{parent_dir}/{sample_sheet_file}")
     check_samplesheet(f"{parent_dir}/{sample_sheet_file}")
-
-
 
 
 ## TODO UMIs, Index different length, index bigger length warning, characters Ns..
