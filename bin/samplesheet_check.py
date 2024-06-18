@@ -71,12 +71,10 @@ def check_settings(settings: SampleSheet) -> bool:
         return False
 
     if "AdapterRead1" not in settings:
-        error_print('"AdapterRead1" field is not present')
-        return False
+        warning_print('"AdapterRead1" field is not present')
 
     if "AdapterRead2" not in settings:
-        error_print('"AdapterRead2" is not present')
-        return False
+        warning_print('"AdapterRead2" is not present')
 
     for settings_field, settings_value in settings.items():
         if settings_field == "AdapterRead1" or settings_field == "AdapterRead2":
