@@ -202,6 +202,7 @@ if __name__ == "__main__":
     check_samplesheet(f"{parent_dir}/{sample_sheet_file}")
 
 
+
 ## TODO UMIs, Index different length, index bigger length warning, characters Ns..
 ## Same index on different samples
 ## CHECK INDEX ID with index
