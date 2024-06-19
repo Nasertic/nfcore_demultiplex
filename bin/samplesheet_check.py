@@ -172,11 +172,25 @@ def convert_to_correct_characters(line: str) -> str:
 
     return ''.join(new_line).replace(";", ",")
 
+def remove_empty_fields(line: str) -> str:
+    line = line.replace("\n", "")
+    line = line.rstrip(",")
+    return line + "\n"
+
 def change_invalid_characters(file: str):
     new_file = []
+    data_section = False
+
     with open(file) as f:
         for line in f:
             new_line = convert_to_correct_characters(line)
+
+            if data_section:
+                new_line = remove_empty_fields(new_line)
+
+            if "[Data]" in new_line:
+                data_section = True
+
             new_file.append(new_line)
 
     with open(file, "w") as f:
