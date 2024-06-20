@@ -67,17 +67,14 @@ smallest_run_iSeq,./assets/smallest_run_SampleSheet.csv,all,/data/medper/LAB/ill
   - flowcell: Path to the flowcell folder (BCL input files)
 
 > 2. Run the pipeline with the following command:
-
-```console
-nextflow run nf-core/demultiplex --input samplesheet.csv --outdir <OUTDIR> -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-```
-
+>
 ```bash
-nextflow run nf-core/demultiplex \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+nextflow run main.nf \
+ --input ./assets/sample_sheet.csv \
+ --outdir /data/scratch/LAB/temp_demultiplex/to_delete_whatever \
+ -c hpc.conf
 ```
+
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
@@ -86,17 +83,12 @@ nextflow run nf-core/demultiplex \
 > [!NOTE]
 > If you are about to run the pipeline inside the HPC (NASERTIC Urederra) cluster, we have created a [config file](conf/test_dragen.config) which runs the pipeline with  minimal possible requirements
 
+Test the pipeline with minimal requirements:
+
 ```bash
 nextflow run main.nf -profile test_dragen,singularity
 ```
 
-## TODO
-```bash
-nextflow run main.nf \
- --input ./assets/sample_sheet.csv \
- --outdir /data/scratch/LAB/temp_demultiplex/to_delete_whatever \
- -c hpc.conf
-```
 
 For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/demultiplex/usage) and the [parameter documentation](https://nf-co.re/demultiplex/parameters).
 
