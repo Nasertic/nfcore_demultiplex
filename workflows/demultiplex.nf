@@ -221,6 +221,13 @@ workflow DEMULTIPLEX {
 
     ch_fastq_to_qc = ch_raw_fastq
 
+    // MODULE: illumina-interop if dragen is selected
+    if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
+        INTEROP(
+            DRAGEN_DEMULTIPLEX.out.stats
+        )
+    }
+
     // MODULE: fastp
     if (!("fastp" in skip_tools)){
         FASTP(ch_raw_fastq, [], [], [])
@@ -261,13 +268,6 @@ workflow DEMULTIPLEX {
         )
         ch_multiqc_files = ch_multiqc_files.mix( FASTQ_SCREEN.out.fastq_screen_txt_report.map { meta, txt -> return txt} )
         ch_versions = ch_versions.mix(FASTQ_SCREEN.out.versions)
-    }
-
-    // MODULE: illumina-interop if dragen is selected
-    if (!("interop" in skip_tools) && demultiplexer in ['dragen']) {
-        INTEROP(
-            DRAGEN_DEMULTIPLEX.out.stats
-        )
     }
 
 
