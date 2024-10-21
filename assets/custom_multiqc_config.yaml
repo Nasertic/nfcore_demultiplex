@@ -14,7 +14,7 @@ module_order:
   - fastq_screen
   - kraken
   - braken
-  - nf-core/demultiplex_workflow_summary
-  - nf-core/demultiplex_software_versions
-  - nf-core/demultiplex_methods_description
+  - nf-core_demultiplex_workflow_summary
+  - nf-core_demultiplex_software_versions
+  - nf-core_demultiplex_methods_description
   - software_versions
