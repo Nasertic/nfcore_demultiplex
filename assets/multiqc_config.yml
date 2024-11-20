@@ -14,3 +14,11 @@ export_plots: true
 sp:
   fastqc/data:
     fn: "*_fastqc_data.txt"
+
+module_order:
+  - fastp:
+      name: "FastP (Read preprocessing)"
+  - fastqc:
+      name: "FastQC (raw)"
+      path_filters_exclude:
+        - "*_val_*.zip"
