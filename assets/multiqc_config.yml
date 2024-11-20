@@ -16,9 +16,18 @@ sp:
     fn: "*_fastqc_data.txt"
 
 module_order:
-  - fastp:
-      name: "FastP (Read preprocessing)"
+  - bclconvert:
+      name: "BCL Convert (General Demultiplex)"
+  - bcl2fastq:
+      name: "bcl2fastq (Samples demultiplex)"
   - fastqc:
       name: "FastQC (raw)"
       path_filters_exclude:
         - "*_val_*.zip"
+  - fastp:
+      name: "FastP (Read preprocessing)"
+  - fastq_screen:
+      name: "FastQ Screen (Contaminants)"
+  - kraken:
+      name: "Kraken (Taxonomic classification)"
+  - custom_content
