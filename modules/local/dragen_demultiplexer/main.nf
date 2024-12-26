@@ -1,7 +1,9 @@
 process DRAGEN_DEMULTIPLEXER {
     tag {"${meta.lane == 'all' ? meta.id : meta.id + ' -> lane: ' + meta.lane }" }
-    label 'dragen'
-    queue 'dragen'
+    // label 'dragen'
+    // queue 'dragen'
+    label 'dragen_v4'
+    queue 'dragen_v4'
     // debug true
 
     input:
@@ -30,11 +32,12 @@ process DRAGEN_DEMULTIPLEXER {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
+    // /opt/edico/bin/dragen
 
     """
     dragen_input_directory=\$(echo ${run_dir} | sed 's/\\/data\\/medper\\/LAB/\\/mnt\\/SequencerOutput/')
 
-    /opt/edico/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
+    /opt/dragen/4.3.13/bin/dragen --bcl-conversion-only=true $args --output-legacy-stats true \
         --bcl-input-directory \$dragen_input_directory \
         --intermediate-results-dir /staging/LAB/tmp/ \
         --output-directory ./ --force \
