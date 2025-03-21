@@ -1,0 +1,4 @@
+nextflow run main.nf \
+ --input /data/scratch/LAB/temp_demultiplex/nfcore_demultiplex/sgalera/nfcore_demultiplex/samplesheet_enric/sample_sheet_demux.csv \
+ --outdir /data/scratch/LAB/temp_demultiplex/20250131_WGS25_02_repro_intercom_w_adapters\
+ -c hpc.conf
